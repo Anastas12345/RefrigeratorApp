@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
 
           <View style={styles.imageWrap}>
             <Image
-              source={require("../assets/images/fridge.png")}
+              source={require("../assets/images/fridgewelcomscreen.png")}
               style={styles.image}
               resizeMode="contain"
             />
