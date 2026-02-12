@@ -29,7 +29,7 @@ export default function Products() {
 
       const data = await response.json();
       setProducts(data);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -37,6 +37,9 @@ export default function Products() {
   };
 
   if (loading) {
+    <Text style={{ fontSize: 28, color: "red", fontWeight: "900" }}>
+  PRODUCTS SCREEN OPENED
+</Text>
     return (
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <ActivityIndicator size="large" color="#FF7A00" />
