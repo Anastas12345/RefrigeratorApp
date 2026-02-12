@@ -1,3 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -5,9 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { useState } from 'react';
 import { CATEGORIES } from '../constants/categories';
+
 
 export default function AddProduct() {
   const [name, setName] = useState('');
@@ -116,53 +118,73 @@ export default function AddProduct() {
                 fontWeight: '600',
               }}
             >
-              [{storage}]
+              {storage}
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Категорії */}
+<View style={sectionStyle}>
+  <Text style={labelStyle}>Категорії</Text>
+
+  {errors.category && (
+    <Text style={errorText}>
+      Ви повинні обрати категорію
+    </Text>
+  )}
+
+  <View
+    style={{
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginTop: 10,
+    }}
+  >
+    {CATEGORIES.map((cat) => (
+      <TouchableOpacity
+        key={cat.id}
+        onPress={() => setSelectedCategory(cat)}
+        style={{
+          width: '25%',
+          alignItems: 'center',
+          marginBottom: 15,
+        }}
+      >
         <View
           style={{
-            backgroundColor: '#D9EEF6',
-            padding: 15,
-            borderRadius: 20,
-            marginBottom: 20,
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+            backgroundColor: cat.color,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth:
+              selectedCategory?.id === cat.id ? 3 : 0,
+            borderColor: '#000',
           }}
         >
-          <Text style={{ marginBottom: 4 }}>Категорії</Text>
-
-          {!selectedCategory && (
-            <Text style={{ color: '#FF3B30', fontSize: 12 }}>
-              Ви повинні обрати категорію
-            </Text>
-          )}
-
-          <View
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              marginTop: 10,
-            }}
-          >
-            {categories.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setSelectedCategory(index)}
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 30,
-                  backgroundColor:
-                    selectedCategory === index
-                      ? '#4AB3D6'
-                      : '#D9D9D9',
-                  margin: 8,
-                }}
-              />
-            ))}
-          </View>
+          <MaterialCommunityIcons
+            name={cat.icon}
+            size={26}
+            color="#fff"
+          />
         </View>
+
+        <Text
+          style={{
+            marginTop: 5,
+            fontSize: 10,
+            textAlign: 'center',
+          }}
+        >
+          {cat.name}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+</View>
+
 
         {/* Термін придатності */}
         <View
@@ -243,3 +265,35 @@ export default function AddProduct() {
     </ScrollView>
   );
 }
+
+/* ===== СТИЛІ ===== */
+
+const sectionStyle = {
+  backgroundColor: '#D9EEF6',
+  padding: 15,
+  borderRadius: 20,
+  marginBottom: 20,
+};
+
+const labelStyle = {
+  marginBottom: 8,
+  fontWeight: '500',
+};
+
+const inputStyle = {
+  backgroundColor: '#fff',
+  padding: 12,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: 'transparent',
+};
+
+const errorBorder = {
+  borderColor: '#FF3B30',
+};
+
+const errorText = {
+  color: '#FF3B30',
+  marginTop: 6,
+  fontSize: 12,
+};
