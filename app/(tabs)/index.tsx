@@ -7,6 +7,8 @@ import {
 } from 'react-native';
 import { useEffect, useState } from 'react';
 import ProductCard from '../../components/ProductCard';
+import { router } from 'expo-router';
+
 
 const API_URL = 'https://myfridgebackend.onrender.com/api/Products';
 
@@ -142,9 +144,8 @@ export default function Products() {
           alignItems: 'center',
           elevation: 5,
         }}
-        onPress={() => {
-          console.log('Натиснуто +');
-        }}
+        onPress={() => router.push('/add-product')}
+
       >
         <Text
           style={{
