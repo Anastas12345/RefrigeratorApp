@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, Image, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
+
 const { width } = Dimensions.get("window");
 
 export default function WelcomeScreen() {

@@ -8,9 +8,8 @@ import {
 import { useEffect, useState } from 'react';
 import ProductCard from '../../components/ProductCard';
 import { router } from 'expo-router';
-
-
 const API_URL = 'https://myfridgebackend.onrender.com/api/Products';
+
 
 export default function Products() {
   const [products, setProducts] = useState([]);
