@@ -1,3 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -5,10 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
 import { CATEGORIES } from '../constants/categories';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+
 
 export default function EditProduct() {
   const params = useLocalSearchParams();

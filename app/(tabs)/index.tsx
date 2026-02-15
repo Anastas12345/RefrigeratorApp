@@ -1,22 +1,33 @@
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-} from 'react-native';
-import { useEffect, useState } from 'react';
-import ProductCard from '../../components/ProductCard';
 import { router } from 'expo-router';
-const API_URL = 'https://myfridgebackend.onrender.com/api/Products';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import ProductCard from '../../components/ProductCard';
+{/*TEMP */}
+import { MOCK_PRODUCTS } from '../../data/mockProducts';
+{/*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/}
+
 
 
 export default function Products() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  
+useEffect(() => {
+  setProducts(MOCK_PRODUCTS);
+  setLoading(false);
+}, []);
+
+
+
+  {/*useEffect(() => { НОРМ
     fetchProducts();
   }, []);
 
@@ -35,7 +46,7 @@ export default function Products() {
     } finally {
       setLoading(false);
     }
-  };
+  };*/}
 
   if (loading) {
     return (
