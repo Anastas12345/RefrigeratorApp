@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -9,37 +9,50 @@ import {
   View,
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
-
-
+import { MOCK_PRODUCTS, updateMockProduct } from '../data/mockProducts';
 
 export default function EditProduct() {
-  const params = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
 
-  // Дані приходять через navigation
-  const [name, setName] = useState(params.name || '');
-  const [quantity, setQuantity] = useState(params.quantity || '');
-  const [unit, setUnit] = useState(params.unit || 'Штуки');
-  const [expiration, setExpiration] = useState(params.expiration || '');
-  const [comment, setComment] = useState(params.comment || '');
-  const [storage, setStorage] = useState(params.storage || 'Холодильник');
-  const [selectedCategory, setSelectedCategory] = useState(
-    CATEGORIES.find((c) => c.id == params.categoryId) || null
-  );
+  const product = MOCK_PRODUCTS.find((p) => p.id === id);
+
+  const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [unit, setUnit] = useState('Штуки');
+  const [expiration, setExpiration] = useState('');
+  const [comment, setComment] = useState('');
+  const [storage, setStorage] = useState('Холодильник');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    if (product) {
+      setName(product.name);
+      setQuantity(product.quantity?.toString());
+      setUnit(product.unit);
+      setExpiration(product.expiration_date);
+      setComment(product.comment || '');
+      setStorage(product.storage_places?.name);
+      setSelectedCategory(
+        CATEGORIES.find((c) => c.id === product.categoryId) || null
+      );
+    }
+  }, []);
 
   const UNITS = ['Штуки', 'Кілограми', 'Літри', 'Грами'];
 
   const handleSave = () => {
-    console.log('Оновлений продукт:', {
+    updateMockProduct({
+      id,
       name,
-      quantity,
+      quantity: Number(quantity),
       unit,
-      expiration,
+      expiration_date: expiration,
       comment,
-      storage,
+      storage_places: { name: storage },
       categoryId: selectedCategory?.id,
     });
 
-    router.back();
+    router.replace('/(tabs)');
   };
 
   return (
@@ -61,6 +74,7 @@ export default function EditProduct() {
       </View>
 
       <View style={{ padding: 20 }}>
+
         {/* Назва */}
         <View style={sectionStyle}>
           <Text style={labelStyle}>Назва продукту</Text>
@@ -69,6 +83,40 @@ export default function EditProduct() {
             onChangeText={setName}
             style={inputStyle}
           />
+        </View>
+
+        {/* Кількість */}
+        <View style={sectionStyle}>
+          <Text style={labelStyle}>Кількість</Text>
+          <TextInput
+            value={quantity}
+            onChangeText={setQuantity}
+            keyboardType="numeric"
+            style={inputStyle}
+          />
+        </View>
+
+        {/* Одиниця */}
+        <View style={sectionStyle}>
+          <Text style={labelStyle}>Одиниця виміру</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {UNITS.map((u) => (
+              <TouchableOpacity
+                key={u}
+                onPress={() => setUnit(u)}
+                style={{
+                  backgroundColor: unit === u ? '#FF7A00' : '#ccc',
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: 20,
+                  marginRight: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <Text style={{ color: '#fff' }}>{u}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Місце зберігання */}
@@ -149,12 +197,13 @@ export default function EditProduct() {
           </View>
         </View>
 
-        {/* Термін */}
+        {/* Термін придатності */}
         <View style={sectionStyle}>
           <Text style={labelStyle}>Термін придатності</Text>
           <TextInput
             value={expiration}
             onChangeText={setExpiration}
+            placeholder="ДД-ММ-РРРР"
             style={inputStyle}
           />
         </View>
@@ -185,6 +234,7 @@ export default function EditProduct() {
             Зберегти
           </Text>
         </TouchableOpacity>
+
       </View>
     </ScrollView>
   );
