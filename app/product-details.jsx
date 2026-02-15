@@ -3,6 +3,9 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { MOCK_PRODUCTS } from '../data/mockProducts';
 import { CATEGORIES } from '../constants/categories';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Alert } from 'react-native';
+import { deleteMockProduct } from '../data/mockProducts';
+
 
 
 
@@ -164,17 +167,39 @@ export default function ProductDetails() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={{
-              backgroundColor: '#F4B000',
-              padding: 12,
-              borderRadius: 10,
-              width: '45%',
-              alignItems: 'center',
-            }}
-            onPress={() => console.log('Зʼїдено')}
-          >
-            <Text style={{ color: '#fff' }}>Зʼїв</Text>
-          </TouchableOpacity>
+  onPress={() =>
+    Alert.alert(
+      'Вам було смачно?',
+      '',
+      [
+        {
+          text: 'Ні',
+          onPress: () => {},
+          style: 'cancel',
+        },
+        {
+          text: 'Так',
+          onPress: () => {
+            deleteMockProduct(product.id);
+            router.replace('/(tabs)');
+          },
+        },
+      ],
+      { cancelable: true }
+    )
+  }
+  style={{
+    backgroundColor: '#F39C12',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 12,
+  }}
+>
+  <Text style={{ color: '#000', fontWeight: '600' }}>
+    З’їв
+  </Text>
+</TouchableOpacity>
+
         </View>
 
         {/* Назад */}

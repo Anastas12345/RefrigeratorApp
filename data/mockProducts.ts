@@ -1,10 +1,22 @@
-export const MOCK_PRODUCTS = [
+export interface Product {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  expiration_date: string;
+  comment?: string;
+  storage_places: { name: string };
+  categoryId: number;
+}
+
+export let MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
     name: 'Молоко',
     quantity: 1,
-    unit: 'л',
+    unit: 'шт',
     expiration_date: '20-02-2026',
+    comment: '144 ккал',
     storage_places: { name: 'Холодильник' },
     categoryId: 1,
   },
@@ -14,6 +26,7 @@ export const MOCK_PRODUCTS = [
     quantity: 10,
     unit: 'шт',
     expiration_date: '25-02-2026',
+    comment: '',
     storage_places: { name: 'Холодильник' },
     categoryId: 14,
   },
@@ -23,7 +36,23 @@ export const MOCK_PRODUCTS = [
     quantity: 1,
     unit: 'шт',
     expiration_date: '18-02-2026',
+    comment: '',
     storage_places: { name: 'Комора' },
     categoryId: 7,
   },
 ];
+
+export function updateMockProduct(updatedProduct: Product) {
+  const index = MOCK_PRODUCTS.findIndex(
+    (p) => p.id === updatedProduct.id
+  );
+
+  if (index !== -1) {
+    MOCK_PRODUCTS[index] = updatedProduct;
+  }
+}
+export function deleteMockProduct(id: string) {
+  MOCK_PRODUCTS = MOCK_PRODUCTS.filter(
+    (product) => product.id !== id
+  );
+}
