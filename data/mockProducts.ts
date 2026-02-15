@@ -6,6 +6,7 @@ export const MOCK_PRODUCTS = [
     unit: 'л',
     expiration_date: '20-02-2026',
     storage_places: { name: 'Холодильник' },
+    categoryId: 1,
   },
   {
     id: '2',
@@ -14,6 +15,7 @@ export const MOCK_PRODUCTS = [
     unit: 'шт',
     expiration_date: '25-02-2026',
     storage_places: { name: 'Холодильник' },
+    categoryId: 14,
   },
   {
     id: '3',
@@ -22,5 +24,6 @@ export const MOCK_PRODUCTS = [
     unit: 'шт',
     expiration_date: '18-02-2026',
     storage_places: { name: 'Комора' },
+    categoryId: 7,
   },
 ];
