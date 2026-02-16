@@ -51,8 +51,3 @@ export function updateMockProduct(updatedProduct: Product) {
     MOCK_PRODUCTS[index] = updatedProduct;
   }
 }
-export function deleteMockProduct(id: string) {
-  MOCK_PRODUCTS = MOCK_PRODUCTS.filter(
-    (product) => product.id !== id
-  );
-}
