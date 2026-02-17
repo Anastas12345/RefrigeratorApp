@@ -77,8 +77,8 @@ export default function ProfileScreen() {
   };
 
   const onLogout = () => {
-    // тут поки просто повертаємось на логін
-    router.replace("/login");
+    // переходимо на вкладку продукти
+    router.replace("/(tabs)/index" as any);
   };
 
   return (

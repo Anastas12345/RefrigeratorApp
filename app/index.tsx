@@ -1,13 +1,4 @@
-import React from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Pressable,
-  Dimensions,
-} from "react-native";
+
 import { useRouter } from "expo-router";
 import React from "react";
 import {
