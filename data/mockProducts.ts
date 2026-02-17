@@ -17,7 +17,7 @@ export let MOCK_PRODUCTS: Product[] = [
     unit: 'шт',
     expiration_date: '20-02-2026',
     comment: '144 ккал',
-    storage_places: { name: 'Холодильник' },
+    storage_places: { name: 'Морозилка' },
     categoryId: 1,
   },
   {

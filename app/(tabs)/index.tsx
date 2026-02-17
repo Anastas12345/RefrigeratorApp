@@ -1,33 +1,34 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  TouchableOpacity,
   View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
+import { router } from 'expo-router';
 import ProductCard from '../../components/ProductCard';
-{/*TEMP */}
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
-{/*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/}
 
-
+/*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/
 
 export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  
-useEffect(() => {
-  setProducts(MOCK_PRODUCTS);
-  setLoading(false);
-}, []);
+  const [activeTab, setActiveTab] = useState('Всі');
 
+  useEffect(() => {
+    loadMockProducts();
+  }, []);
 
+  const loadMockProducts = () => {
+    setProducts(MOCK_PRODUCTS);
+    setLoading(false);
+  };
 
-  {/*useEffect(() => { НОРМ
+  /*useEffect(() => { НОРМ
     fetchProducts();
   }, []);
 
@@ -46,7 +47,16 @@ useEffect(() => {
     } finally {
       setLoading(false);
     }
-  };*/}
+  };*/
+
+  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ
+  const filteredProducts =
+    activeTab === 'Всі'
+      ? products
+      : products.filter(
+          (item) =>
+            item.storage_places?.name === activeTab
+        );
 
   if (loading) {
     return (
@@ -87,16 +97,20 @@ useEffect(() => {
         }}
       >
         {['Всі', 'Холодильник', 'Морозилка', 'Комора'].map((item) => (
-          <Text
+          <TouchableOpacity
             key={item}
-            style={{
-              fontSize: 14,
-              color: item === 'Всі' ? '#FF7A00' : '#999',
-              fontWeight: item === 'Всі' ? '600' : '400',
-            }}
+            onPress={() => setActiveTab(item)}
           >
-            {item}
-          </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: activeTab === item ? '#FF7A00' : '#999',
+                fontWeight: activeTab === item ? '600' : '400',
+              }}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
         ))}
       </View>
 
@@ -133,9 +147,11 @@ useEffect(() => {
 
       {/* Список продуктів */}
       <FlatList
-        data={products}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        data={filteredProducts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ProductCard product={item} />
+        )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
@@ -154,8 +170,7 @@ useEffect(() => {
           alignItems: 'center',
           elevation: 5,
         }}
-        onPress={() => router.push('/add-product' as any)}
-
+        onPress={() => router.push('/add-product')}
       >
         <Text
           style={{
