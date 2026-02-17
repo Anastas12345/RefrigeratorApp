@@ -154,7 +154,7 @@ useEffect(() => {
           alignItems: 'center',
           elevation: 5,
         }}
-        onPress={() => router.push('/add-product')}
+        onPress={() => router.push('/add-product' as any)}
 
       >
         <Text
