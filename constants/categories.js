@@ -1,0 +1,18 @@
+export const CATEGORIES = [
+  { id: 1, name: 'Молочні продукти', color: '#4AB3D6', icon: 'cup' },
+  { id: 2, name: 'Мʼясо', color: '#E74C3C', icon: 'food-steak' },
+  { id: 3, name: 'Риба', color: '#2E86C1', icon: 'fish' },
+  { id: 4, name: 'Овочі', color: '#27AE60', icon: 'carrot' },
+  { id: 5, name: 'Фрукти', color: '#F4D03F', icon: 'fruit-cherries' },
+  { id: 6, name: 'Крупи', color: '#D7B899', icon: 'grain' },
+  { id: 7, name: 'Хлібобулочні', color: '#C39A6B', icon: 'bread-slice' },
+  { id: 8, name: 'Заморожені', color: '#85C1E9', icon: 'snowflake' },
+  { id: 9, name: 'Напої', color: '#8E44AD', icon: 'bottle-soda' },
+  { id: 10, name: 'Солодощі', color: '#F1948A', icon: 'cupcake' },
+  { id: 11, name: 'Соуси', color: '#F39C12', icon: 'food-variant' },
+  { id: 12, name: 'Консерви', color: '#7F8C8D', icon: 'cylinder' },
+  { id: 13, name: 'Горіхи', color: '#8B5E3C', icon: 'peanut' },
+  { id: 14, name: 'Яйця', color: '#F8E8C6', icon: 'egg' },
+  { id: 15, name: 'Готові страви', color: '#D35400', icon: 'food' },
+  { id: 16, name: 'Інше', color: '#D5D8DC', icon: 'dots-horizontal' },
+];
