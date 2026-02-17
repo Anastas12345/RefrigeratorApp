@@ -1,3 +1,13 @@
+import React from "react";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
@@ -66,7 +76,7 @@ export default function WelcomeScreen() {
           {/* кнопка */}
           <Pressable
             style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={() => router.replace("/(tabs)")}
+            onPress={() => router.replace("/login")}
           >
             <Text style={styles.buttonText}>Почати</Text>
           </Pressable>
