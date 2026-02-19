@@ -1,21 +1,38 @@
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  FlatList,
   ActivityIndicator,
+  FlatList,
+  Text,
   TouchableOpacity,
+  View,
+  TextInput,
 } from 'react-native';
-import { useEffect, useState } from 'react';
 import ProductCard from '../../components/ProductCard';
+import { MOCK_PRODUCTS } from '../../data/mockProducts';
 
-const API_URL = 'https://myfridgebackend.onrender.com/api/Products';
+/*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/
 
 export default function Products() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [filterType, setFilterType] =
+    useState<null | 'favorites' | 'dateAsc' | 'dateDesc'>(null);
+
+  const [activeTab, setActiveTab] = useState('Всі');
 
   useEffect(() => {
+    loadMockProducts();
+  }, []);
+
+  const loadMockProducts = () => {
+    setProducts(MOCK_PRODUCTS);
+    setLoading(false);
+  };
+
+  /*useEffect(() => { НОРМ
     fetchProducts();
   }, []);
 
@@ -29,17 +46,55 @@ export default function Products() {
 
       const data = await response.json();
       setProducts(data);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  };*/
+
+  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ
+  let filteredProducts =
+    activeTab === 'Всі'
+      ? [...products]
+      : products.filter(
+          (item) =>
+            item.storage_places?.name === activeTab
+        );
+
+  // 🔎 ПОШУК
+  if (searchText.trim() !== '') {
+    filteredProducts = filteredProducts.filter((item) =>
+      item.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }
+
+  // ❤️ УЛЮБЛЕНІ
+  if (filterType === 'favorites') {
+    filteredProducts = filteredProducts.filter(
+      (item) => item.isFavorite === true
+    );
+  }
+
+  // 📅 НАЙБЛИЖЧІ
+  if (filterType === 'dateAsc') {
+    filteredProducts = [...filteredProducts].sort(
+      (a, b) =>
+        new Date(a.expiration_date.split('-').reverse().join('-')).getTime() -
+        new Date(b.expiration_date.split('-').reverse().join('-')).getTime()
+    );
+  }
+
+  // 📅 НАЙПІЗНІШІ
+  if (filterType === 'dateDesc') {
+    filteredProducts = [...filteredProducts].sort(
+      (a, b) =>
+        new Date(b.expiration_date.split('-').reverse().join('-')).getTime() -
+        new Date(a.expiration_date.split('-').reverse().join('-')).getTime()
+    );
+  }
 
   if (loading) {
-    <Text style={{ fontSize: 28, color: "red", fontWeight: "900" }}>
-  PRODUCTS SCREEN OPENED
-</Text>
     return (
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <ActivityIndicator size="large" color="#FF7A00" />
@@ -78,27 +133,34 @@ export default function Products() {
         }}
       >
         {['Всі', 'Холодильник', 'Морозилка', 'Комора'].map((item) => (
-          <Text
+          <TouchableOpacity
             key={item}
-            style={{
-              fontSize: 14,
-              color: item === 'Всі' ? '#FF7A00' : '#999',
-              fontWeight: item === 'Всі' ? '600' : '400',
-            }}
+            onPress={() => setActiveTab(item)}
           >
-            {item}
-          </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: activeTab === item ? '#FF7A00' : '#999',
+                fontWeight: activeTab === item ? '600' : '400',
+              }}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
         ))}
       </View>
 
-      {/* Пошук + фільтри (візуально) */}
+      {/* Пошук + фільтри */}
       <View
         style={{
           flexDirection: 'row',
           marginBottom: 15,
         }}
       >
-        <View
+        <TextInput
+          placeholder="Пошук продукту…"
+          value={searchText}
+          onChangeText={setSearchText}
           style={{
             flex: 1,
             backgroundColor: '#fff',
@@ -106,11 +168,15 @@ export default function Products() {
             borderRadius: 10,
             marginRight: 10,
           }}
-        >
-          <Text style={{ color: '#999' }}>Пошук продукту…</Text>
-        </View>
+        />
 
-        <View
+        <TouchableOpacity
+          onPress={() => {
+            if (filterType === null) setFilterType('favorites');
+            else if (filterType === 'favorites') setFilterType('dateAsc');
+            else if (filterType === 'dateAsc') setFilterType('dateDesc');
+            else setFilterType(null);
+          }}
           style={{
             backgroundColor: '#fff',
             padding: 10,
@@ -118,15 +184,32 @@ export default function Products() {
             justifyContent: 'center',
           }}
         >
-          <Text style={{ color: '#999' }}>Фільтри</Text>
-        </View>
+          <Text style={{ color: '#999' }}>
+            {filterType === null && 'Фільтри'}
+            {filterType === 'favorites' && '❤️ Улюблені'}
+            {filterType === 'dateAsc' && 'Найближчі'}
+            {filterType === 'dateDesc' && 'Найпізніші'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Список продуктів */}
       <FlatList
-        data={products}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        data={filteredProducts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => {
+              setSearchText(''); // 🔥 очищаємо пошук
+              router.push({
+                pathname: '/product-details',
+                params: { id: item.id },
+              });
+            }}
+          >
+            <ProductCard product={item} />
+          </TouchableOpacity>
+        )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
@@ -145,9 +228,7 @@ export default function Products() {
           alignItems: 'center',
           elevation: 5,
         }}
-        onPress={() => {
-          console.log('Натиснуто +');
-        }}
+        onPress={() => router.push('/add-product')}
       >
         <Text
           style={{
