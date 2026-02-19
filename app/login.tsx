@@ -45,7 +45,7 @@ export default function LoginScreen() {
 
   const onLogin = async () => {
     if (!validate()) return;
-    router.replace("/profile");
+    router.replace("/(tabs)");
   };
 
   const onChangeLogin = (v: string) => {

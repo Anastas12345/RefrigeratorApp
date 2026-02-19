@@ -62,7 +62,7 @@ export default function RegisterScreen() {
 
   const onRegister = async () => {
     if (!validate()) return;
-    router.replace("/profile");
+    router.replace("/(tabs)");
   };
 
   return (
