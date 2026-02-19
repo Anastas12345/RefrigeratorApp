@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
+import { saveProfile }  from "@/src/storage/profile";
 const { width } = Dimensions.get("window");
 
 export default function RegisterScreen() {
@@ -60,7 +60,7 @@ export default function RegisterScreen() {
 };
 
 
-  const onRegister = () => {
+  const onRegister = async () => {
     if (!validate()) return;
     router.replace("/profile");
   };
@@ -180,6 +180,11 @@ export default function RegisterScreen() {
                   Вже є акаунт? <Text style={styles.linkTextBold}>Увійти</Text>
                 </Text>
               </Pressable>
+              <Pressable
+  style={styles.linkWrap}
+  onPress={() => router.push("/login")}
+>
+</Pressable>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -200,7 +205,7 @@ const styles = StyleSheet.create({
 
   headerBlob: {
     position: "absolute",
-    top: -width * 0.22,
+    top: width * 0.22,
     left: -width * 0.2,
     width: width * 1.4,
     height: width * 1.05,
