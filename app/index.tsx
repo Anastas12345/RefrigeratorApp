@@ -67,7 +67,7 @@ export default function WelcomeScreen() {
           {/* кнопка */}
           <Pressable
             style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={() => router.replace("/login")}
+            onPress={() => router.replace("/start" as any )}
           >
             <Text style={styles.buttonText}>Почати</Text>
           </Pressable>

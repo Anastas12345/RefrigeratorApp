@@ -11,5 +11,5 @@ export async function getLoggedIn() {
 }
 
 export async function clearSession() {
-  await AsyncStorage.removeItem(KEY);
+  await AsyncStorage.multiRemove([KEY, "access_token"]);
 }

@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
-
+import { setLoggedIn } from "@/src/storage/session";
 
 const { width } = Dimensions.get("window");
 
@@ -43,9 +43,9 @@ export default function LoginScreen() {
 };
 
 
-  const onLogin = async() => {
+  const onLogin = async () => {
     if (!validate()) return;
-    router.replace("/(tabs)");
+    router.replace("/profile");
   };
 
   const onChangeLogin = (v: string) => {
