@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+
 import {
   ActivityIndicator,
   FlatList,
@@ -10,6 +11,9 @@ import {
 } from 'react-native';
 import ProductCard from '../../components/ProductCard';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
+import { Pressable, Image } from "react-native";
+import { SideMenu } from "@/components/SideMenu";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/
 
@@ -22,7 +26,7 @@ export default function Products() {
     useState<null | 'favorites' | 'dateAsc' | 'dateDesc'>(null);
 
   const [activeTab, setActiveTab] = useState('Всі');
-
+const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     loadMockProducts();
   }, []);
@@ -109,9 +113,11 @@ export default function Products() {
       </View>
     );
   }
-
+  
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: '#EAF6FA' }}>
+    
+    <View
+    style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20, paddingTop: 70, backgroundColor: '#EAF6FA' }}>
       {/* Заголовок */}
       <Text
         style={{
@@ -123,7 +129,34 @@ export default function Products() {
       >
         Продукти
       </Text>
+<Pressable
+  onPress={() => setMenuOpen(true)}
+  style={{ position: "absolute", top: 70, left: 12, zIndex: 999 }}
+  hitSlop={12}
+>
+  <Image
+    source={require("@/assets/images/fridge-menu.png")}
+    style={{ width: 32, height: 32 }}
+    resizeMode="contain"
+  />
+</Pressable>
 
+<SideMenu
+  visible={menuOpen}
+  onClose={() => setMenuOpen(false)}
+  onGoProducts={() => {
+    setMenuOpen(false);
+    router.replace("/(tabs)");
+  }}
+  onGoAddProduct={() => {
+    setMenuOpen(false);
+    router.push("/add-product");
+  }}
+  onGoLogin={() => {
+    setMenuOpen(false);
+    router.replace("/login");
+  }}
+/>
       {/* Таби */}
       <View
         style={{
