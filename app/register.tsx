@@ -62,7 +62,6 @@ export default function RegisterScreen() {
 
   const onRegister = async () => {
     if (!validate()) return;
-    await saveProfile({ name: login.trim(), email: `${login.trim()}@example.com` });
     router.replace("/(tabs)");
   };
 

@@ -23,7 +23,7 @@ export default function WelcomeScreen() {
         <View style={styles.headerBlob} />
 
         <View style={styles.content}>
-          <Text style={styles.titleSmall}>ЩО В</Text>
+          <Text style={styles.titleSmall}>ЩО У</Text>
 
           <Text style={styles.titleBig} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
             ХОЛОДИЛЬНИКУ
@@ -67,7 +67,7 @@ export default function WelcomeScreen() {
           {/* кнопка */}
           <Pressable
             style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={() => router.replace("/login")}
+            onPress={() => router.replace("/start" as any )}
           >
             <Text style={styles.buttonText}>Почати</Text>
           </Pressable>
