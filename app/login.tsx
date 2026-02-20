@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   SafeAreaView,
   View,
@@ -48,21 +50,28 @@ export default function LoginScreen() {
   };
 
   const onLogin = async () => {
-    if (!validate()) return;
+  if (!validate()) return;
 
-    try {
-      setServerError(null);
-      setLoading(true);
+  try {
+    setServerError(null);
+    setLoading(true);
 
-      await apiLogin(email.trim(), password);
+    // 🔥 отримуємо токен
+    const token = await apiLogin(email.trim(), password);
 
-      router.replace("/(tabs)");
-    } catch (e: any) {
-      setServerError(e?.message ?? "Помилка входу");
-    } finally {
-      setLoading(false);
-    }
-  };
+    console.log("NEW TOKEN:", token);
+
+    // 🔥 примусово перезаписуємо токен
+    await AsyncStorage.setItem("token", token);
+
+    router.replace("/(tabs)");
+  } catch (e: any) {
+    setServerError(e?.message ?? "Помилка входу");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const onChangeEmail = (v: string) => {
     setEmail(v);
