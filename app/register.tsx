@@ -9,17 +9,19 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { saveProfile }  from "@/src/storage/profile";
+import { TouchableOpacity } from "react-native";
+
+import { register as apiRegister, login as apiLogin } from "@/src/api/authApi";
+
 const { width } = Dimensions.get("window");
 
 export default function RegisterScreen() {
   const router = useRouter();
 
-  const [login, setLogin] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
 
@@ -27,42 +29,65 @@ export default function RegisterScreen() {
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
   const [errors, setErrors] = useState<{
-    login?: string;
+    email?: string;
     password?: string;
     repeatPassword?: string;
   }>({});
 
-  const clearError = (key: keyof typeof errors) => {
-    if (errors[key]) setErrors((p) => ({ ...p, [key]: undefined }));
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const clearError = (key: "email" | "password" | "repeatPassword") => {
+    setErrors((p) => ({ ...p, [key]: undefined }));
+    if (serverError) setServerError(null);
   };
 
   const validate = () => {
-  const e: typeof errors = {};
+    const e: {
+      email?: string;
+      password?: string;
+      repeatPassword?: string;
+    } = {};
 
-  if (!login.trim()) {
-    e.login = "Потрібно ввести логін";
-  }
+    if (!email.trim()) e.email = "Потрібно ввести пошту";
 
-  if (!password.trim()) {
-    e.password = "Потрібно ввести пароль";
-  } else if (password.length < 6) {
-    e.password = "Пароль має містити не менше 6 символів";
-  }
+    if (!password.trim()) {
+      e.password = "Потрібно ввести пароль";
+    } else if (password.length < 6) {
+      e.password = "Пароль має містити не менше 6 символів";
+    }
 
-  if (!repeatPassword.trim()) {
-    e.repeatPassword = "Потрібно повторити пароль";
-  } else if (password !== repeatPassword) {
-    e.repeatPassword = "Паролі не співпадають";
-  }
+    if (!repeatPassword.trim()) {
+      e.repeatPassword = "Потрібно повторити пароль";
+    } else if (repeatPassword !== password) {
+      e.repeatPassword = "Паролі не співпадають";
+    }
 
-  setErrors(e);
-  return Object.keys(e).length === 0;
-};
-
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const onRegister = async () => {
     if (!validate()) return;
-    router.replace("/(tabs)");
+
+    try {
+      setServerError(null);
+      setLoading(true);
+
+      // 1) пробуємо реєстрацію
+      const token = await apiRegister(email.trim(), password);
+
+      // 2) якщо register НЕ повернув токен — робимо авто-логін (щоб одразу зайти)
+      if (!token) {
+        await apiLogin(email.trim(), password);
+      }
+
+      router.replace("/(tabs)");
+    } catch (e: any) {
+      setServerError(e?.message ?? "Помилка реєстрації");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,27 +106,27 @@ export default function RegisterScreen() {
               adjustsFontSizeToFit
               minimumFontScale={0.8}
             >
-              СТВОРИТИ 
-               АКАУНТ
+              РЕЄСТРАЦІЯ
             </Text>
 
             <View style={styles.card}>
-              {/* Логін */}
-              <Text style={styles.label}>Логін</Text>
+              {/* EMAIL */}
+              <Text style={styles.label}>Пошта</Text>
               <TextInput
-                value={login}
+                value={email}
                 onChangeText={(v) => {
-                  setLogin(v);
-                  clearError("login");
+                  setEmail(v);
+                  clearError("email");
                 }}
-                placeholder="Введіть логін"
+                placeholder="Введіть пошту"
                 placeholderTextColor="#9AA7B2"
-                style={[styles.input, errors.login && styles.inputError]}
+                style={[styles.input, errors.email && styles.inputError]}
                 autoCapitalize="none"
+                keyboardType="email-address"
               />
-              {!!errors.login && <Text style={styles.errorText}>{errors.login}</Text>}
+              {!!errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-              {/* Пароль + око */}
+              {/* PASSWORD + EYE */}
               <Text style={[styles.label, { marginTop: 12 }]}>Пароль</Text>
               <View style={styles.passwordWrap}>
                 <TextInput
@@ -109,18 +134,15 @@ export default function RegisterScreen() {
                   onChangeText={(v) => {
                     setPassword(v);
                     clearError("password");
-                    // якщо вже було "паролі не співпадають" — перевіримо повтор пізніше
                   }}
                   placeholder="Введіть пароль"
-                  placeholderTextColor="#9AA7B2"
-                  style={[
+                  placeholderTextColor="#9AA7B2"style={[
                     styles.input,
                     styles.passwordInput,
                     errors.password && styles.inputError,
                   ]}
                   secureTextEntry={!showPassword}
                 />
-
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeButton}
@@ -134,7 +156,7 @@ export default function RegisterScreen() {
               </View>
               {!!errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
-              {/* Повтор пароля + око */}
+              {/* REPEAT PASSWORD + EYE */}
               <Text style={[styles.label, { marginTop: 12 }]}>Повтор пароля</Text>
               <View style={styles.passwordWrap}>
                 <TextInput
@@ -152,7 +174,6 @@ export default function RegisterScreen() {
                   ]}
                   secureTextEntry={!showRepeatPassword}
                 />
-
                 <TouchableOpacity
                   onPress={() => setShowRepeatPassword(!showRepeatPassword)}
                   style={styles.eyeButton}
@@ -168,23 +189,30 @@ export default function RegisterScreen() {
                 <Text style={styles.errorText}>{errors.repeatPassword}</Text>
               )}
 
+              {/* SERVER ERROR */}
+              {!!serverError && <Text style={styles.errorText}>{serverError}</Text>}
+
+              {/* BUTTON */}
               <Pressable
-                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                style={({ pressed }) => [
+                  styles.button,
+                  pressed && styles.buttonPressed,
+                  loading && { opacity: 0.7 },
+                ]}
                 onPress={onRegister}
+                disabled={loading}
               >
-                <Text style={styles.buttonText}>Зареєструватися</Text>
+                <Text style={styles.buttonText}>
+                  {loading ? "Зачекайте..." : "Зареєструватися"}
+                </Text>
               </Pressable>
 
+              {/* LINK TO LOGIN */}
               <Pressable style={styles.linkWrap} onPress={() => router.replace("/login")}>
                 <Text style={styles.linkText}>
                   Вже є акаунт? <Text style={styles.linkTextBold}>Увійти</Text>
                 </Text>
               </Pressable>
-              <Pressable
-  style={styles.linkWrap}
-  onPress={() => router.push("/login")}
->
-</Pressable>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -205,7 +233,7 @@ const styles = StyleSheet.create({
 
   headerBlob: {
     position: "absolute",
-    top: width * 0.22,
+    top: -width * 0.22, // як у логіні (щоб не з'їжджав дизайн)
     left: -width * 0.2,
     width: width * 1.4,
     height: width * 1.05,
@@ -216,7 +244,15 @@ const styles = StyleSheet.create({
 
   content: { flex: 1, alignItems: "center", paddingHorizontal: 22, paddingTop: 28 },
 
-  titleBig: { fontSize: 28, fontWeight: "900", color: ORANGE, letterSpacing: 1, marginTop: 2, width: "100%", textAlign: "center" },
+  titleBig: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: ORANGE,
+    letterSpacing: 1,
+    marginTop: 2,
+    width: "100%",
+    textAlign: "center",
+  },
 
   card: {
     width: "100%",
@@ -224,8 +260,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 22,
     padding: 18,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
+    shadowColor: "#000",shadowOpacity: 0.08,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,

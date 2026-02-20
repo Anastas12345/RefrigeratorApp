@@ -13,51 +13,68 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
-import { setLoggedIn } from "@/src/storage/session";
+
+import { login as apiLogin } from "@/src/api/authApi";
 
 const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const router = useRouter();
 
-  const [login, setLogin] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [errors, setErrors] = useState<{ login?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const validate = () => {
-  const e: { login?: string; password?: string } = {};
+    const e: { email?: string; password?: string } = {};
 
-  if (!login.trim()) {
-    e.login = "Потрібно ввести логін";
-  }
+    if (!email.trim()) {
+      e.email = "Потрібно ввести пошту";
+    }
 
-  if (!password.trim()) {
-    e.password = "Потрібно ввести пароль";
-  } else if (password.length < 6) {
-    e.password = "Пароль має містити не менше 6 символів";
-  }
+    if (!password.trim()) {
+      e.password = "Потрібно ввести пароль";
+    } else if (password.length < 6) {
+      e.password = "Пароль має містити не менше 6 символів";
+    }
 
-  setErrors(e);
-  return Object.keys(e).length === 0;
-};
-
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const onLogin = async () => {
     if (!validate()) return;
-    router.replace("/(tabs)");
+
+    try {
+      setServerError(null);
+      setLoading(true);
+
+      await apiLogin(email.trim(), password);
+
+      router.replace("/(tabs)");
+    } catch (e: any) {
+      setServerError(e?.message ?? "Помилка входу");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onChangeLogin = (v: string) => {
-    setLogin(v);
-    if (errors.login) setErrors((p) => ({ ...p, login: undefined }));
+  const onChangeEmail = (v: string) => {
+    setEmail(v);
+    if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
+    if (serverError) setServerError(null);
   };
 
   const onChangePassword = (v: string) => {
     setPassword(v);
     if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
+    if (serverError) setServerError(null);
   };
-  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -69,55 +86,74 @@ export default function LoginScreen() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.content}>
-            <Text style={styles.titleBig} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+            <Text
+              style={styles.titleBig}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
               АВТОРИЗАЦІЯ
             </Text>
 
             <View style={styles.card}>
-              <Text style={styles.label}>Логін</Text>
+              <Text style={styles.label}>Пошта</Text>
               <TextInput
-                value={login}
-                onChangeText={onChangeLogin}
-                placeholder="Введіть логін"
+                value={email}
+                onChangeText={onChangeEmail}
+                placeholder="Введіть пошту"
                 placeholderTextColor="#9AA7B2"
-                style={[styles.input, errors.login && styles.inputError]}
+                style={[styles.input, errors.email && styles.inputError]}
                 autoCapitalize="none"
+                keyboardType="email-address"
               />
-              {!!errors.login && <Text style={styles.errorText}>{errors.login}</Text>}
+              {!!errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
               <Text style={[styles.label, { marginTop: 12 }]}>Пароль</Text>
 
-<View style={styles.passwordWrap}>
-  <TextInput
-    value={password}
-    onChangeText={onChangePassword}
-    placeholder="Введіть пароль"
-    placeholderTextColor="#9AA7B2"
-    style={[
-      styles.input,
-      styles.passwordInput,
-      errors.password && styles.inputError,
-    ]}
-    secureTextEntry={!showPassword}
-  />
+              <View style={styles.passwordWrap}>
+                <TextInput
+                  value={password}
+                  onChangeText={onChangePassword}
+                  placeholder="Введіть пароль"
+                  placeholderTextColor="#9AA7B2"
+                  style={[
+                    styles.input,
+                    styles.passwordInput,
+                    errors.password && styles.inputError,
+                  ]}
+                  secureTextEntry={!showPassword}
+                />
 
-  <TouchableOpacity
-    onPress={() => setShowPassword(!showPassword)}
-    style={styles.eyeButton}
-  >
-    <Ionicons
-      name={showPassword ? "eye-off-outline" : "eye-outline"}
-      size={22}
-      color="#7B8794"
-    />
-  </TouchableOpacity>
-</View>
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={22}
+                    color="#7B8794"
+                  />
+                </TouchableOpacity>
+              </View>
 
-{!!errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+              {!!errors.password && (<Text style={styles.errorText}>{errors.password}</Text>
+              )}
 
+              {/* Помилка від бекенда */}
+              {!!serverError && <Text style={styles.errorText}>{serverError}</Text>}
 
-              <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={onLogin}>
-                <Text style={styles.buttonText}>Увійти</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  pressed && styles.buttonPressed,
+                  loading && { opacity: 0.7 },
+                ]}
+                onPress={onLogin}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? "Зачекайте..." : "Увійти"}
+                </Text>
               </Pressable>
 
               <Pressable style={styles.linkWrap} onPress={() => router.push("/register")}>
@@ -142,21 +178,6 @@ const ERROR = "#E53935";
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: LIGHT_BG },
   container: { flex: 1, backgroundColor: LIGHT_BG },
-  passwordWrap: {
-  position: "relative",
-  justifyContent: "center",
- },
-
- passwordInput: {
-  paddingRight: 46,
- },
-
- eyeButton: {
-  position: "absolute",
-  right: 14,
-  height: "100%",
-  justifyContent: "center",
- },
 
   headerBlob: {
     position: "absolute",
@@ -171,7 +192,15 @@ const styles = StyleSheet.create({
 
   content: { flex: 1, alignItems: "center", paddingHorizontal: 22, paddingTop: 28 },
 
-  titleBig: { fontSize: 28, fontWeight: "900", color: ORANGE, letterSpacing: 1, marginTop: 2, width: "100%", textAlign: "center" },
+  titleBig: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: ORANGE,
+    letterSpacing: 1,
+    marginTop: 2,
+    width: "100%",
+    textAlign: "center",
+  },
 
   card: {
     width: "100%",
@@ -198,15 +227,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#2B3A42",
   },
-  inputError: {
-    borderColor: ERROR,
-  },
+  inputError: { borderColor: ERROR },
 
   errorText: {
     marginTop: 6,
     color: ERROR,
     fontSize: 12,
     fontWeight: "700",
+  },
+
+  passwordWrap: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  passwordInput: { paddingRight: 46 },
+  eyeButton: {
+    position: "absolute",
+    right: 14,
+    height: "100%",
+    justifyContent: "center",
   },
 
   button: {
