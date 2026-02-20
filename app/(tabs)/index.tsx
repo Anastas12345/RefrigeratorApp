@@ -14,6 +14,7 @@ import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import { Pressable, Image } from "react-native";
 import { SideMenu } from "@/components/SideMenu";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { removeToken } from "@/src/storage/token";
 
 /*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/
 
@@ -152,8 +153,12 @@ const [menuOpen, setMenuOpen] = useState(false);
     setMenuOpen(false);
     router.push("/add-product");
   }}
-  onGoLogin={() => {
+  onGoProfile={() => {
     setMenuOpen(false);
+    router.push("/profile");
+  }}
+  onLogout={async () => {
+    await removeToken();
     router.replace("/login");
   }}
 />
