@@ -1,22 +1,28 @@
-// src/storage/profile.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export type LocalProfile = {
-  name: string;
-  email: string;
-};
+const EMAIL_KEY = "profile_email";
+const NAME_KEY = "profile_name";
 
-const KEY = "local_profile_v1";
-
-export async function saveProfile(profile: LocalProfile) {
-  await AsyncStorage.setItem(KEY, JSON.stringify(profile));
+export async function saveProfileEmail(email: string) {
+  await AsyncStorage.setItem(EMAIL_KEY, email.trim());
 }
 
-export async function loadProfile(): Promise<LocalProfile | null> {
-  const raw = await AsyncStorage.getItem(KEY);
-  return raw ? (JSON.parse(raw) as LocalProfile) : null;
+export async function getProfileEmail() {
+  return await AsyncStorage.getItem(EMAIL_KEY);
 }
 
-export async function clearProfile() {
-  await AsyncStorage.removeItem(KEY);
+export async function clearProfileEmail() {
+  await AsyncStorage.removeItem(EMAIL_KEY);
+}
+
+export async function saveProfileName(name: string) {
+  await AsyncStorage.setItem(NAME_KEY, name.trim());
+}
+
+export async function getProfileName() {
+  return await AsyncStorage.getItem(NAME_KEY);
+}
+
+export async function clearProfileName() {
+  await AsyncStorage.removeItem(NAME_KEY);
 }

@@ -16,6 +16,8 @@ import { TouchableOpacity } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { login as apiLogin } from "@/src/api/authApi";
+import { saveToken } from "@/src/storage/token";
+import { saveProfileEmail } from "@/src/storage/profile";
 
 const { width } = Dimensions.get("window");
 
@@ -49,23 +51,21 @@ export default function LoginScreen() {
   };
 
   const onLogin = async () => {
-  if (!validate()) return;
-
   try {
-    setServerError(null);
     setLoading(true);
+    setErrors({});
 
-    // 🔥 отримуємо токен
+    // 🔹 Викликаємо логін
     const token = await apiLogin(email.trim(), password);
 
-    console.log("NEW TOKEN:", token);
+    // 🔹 Зберігаємо пошту для профілю
+    await saveProfileEmail(email.trim());
 
-    // 🔥 примусово перезаписуємо токен
-    await AsyncStorage.setItem("token", token);
-
+    // 🔹 Переходимо в додаток
     router.replace("/(tabs)");
+
   } catch (e: any) {
-    setServerError(e?.message ?? "Помилка входу");
+    setErrors(e?.message ?? "Помилка входу");
   } finally {
     setLoading(false);
   }
