@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
+
 
 export default function AddProduct() {
   const [name, setName] = useState('');
@@ -21,8 +23,39 @@ export default function AddProduct() {
   const [storage, setStorage] = useState('Холодильник');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [errors, setErrors] = useState({});
+  const [storagePlaces, setStoragePlaces] = useState([]);
 
-  const UNITS = ['шт', 'кг', 'г', 'л', 'мл'];
+  const UNITS = ['pcs', 'kg', 'g', 'l', 'ml'];
+
+  useEffect(() => {
+  const fetchStoragePlaces = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(
+        "https://myfridgebackend.onrender.com/api/StoragePlace/all",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Не вдалося отримати місця зберігання");
+      }
+
+      const data = await response.json();
+      setStoragePlaces(data);
+
+    } catch (err) {
+      console.log("STORAGE FETCH ERROR:", err);
+    }
+  };
+
+  fetchStoragePlaces();
+}, []);
 
   // Форматування дати ДД-ММ-РРРР
   const formatDate = (text) => {
@@ -55,21 +88,66 @@ export default function AddProduct() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
+ // ТІЛЬКИ ЗМІНЕНИЙ handleSubmit
 
-    console.log({
-      name,
-      quantity,
+const handleSubmit = async () => {
+  if (!validate()) return;
+
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) throw new Error("Токен відсутній");
+
+    const selectedStorage = storagePlaces.find(
+      (place) => place.name === storage
+    );
+
+    if (!selectedStorage) {
+      throw new Error("Місце зберігання не знайдено");
+    }
+
+    const [day, month, year] = expiration.split("-");
+    const isoDate = `${year}-${month}-${day}`;
+
+    const productData = {
+      name: name.trim(),
+      quantity: parseFloat(quantity),
       unit,
-      expiration,
-      comment,
-      storage,
-      categoryId: selectedCategory.id,
-    });
+      expiration_date: isoDate,
+      storage_place_id: selectedStorage.id,
+      comments: comment,
+    };
 
+    const response = await fetch(
+      "https://myfridgebackend.onrender.com/api/products",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      }
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Помилка ${response.status}: ${text}`);
+    }
+
+    const createdProduct = await response.json();
+
+    // 🔥 ОСЬ ГОЛОВНЕ — зберігаємо категорію локально
+   await AsyncStorage.setItem(
+  `category_${createdProduct.id}`,
+  JSON.stringify(selectedCategory)
+);
+console.log("SAVED CATEGORY:", createdProduct.id, selectedCategory.id);
     router.back();
-  };
+
+  } catch (error) {
+    console.log("POST ERROR:", error);
+  }
+};
 
   return (
     <Pressable

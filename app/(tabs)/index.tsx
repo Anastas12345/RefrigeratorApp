@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import {
   ActivityIndicator,
@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { Image, Pressable } from "react-native";
 import ProductCard from '../../components/ProductCard';
 import { SideMenu } from "../../components/SideMenu";
@@ -30,9 +32,11 @@ export default function Products() {
   const [activeTab, setActiveTab] = useState('Всі');
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     fetchProducts();
-  }, []);
+  }, [])
+);
 
   const fetchProducts = async () => {
     try {
@@ -59,7 +63,7 @@ export default function Products() {
 
       const data = await response.json();
       setProducts(data);
-
+console.log("BACKEND PRODUCTS:", data);
     } catch (err: any) {
       console.log('FETCH ERROR:', err);
       setError(err.message);
@@ -68,14 +72,14 @@ export default function Products() {
     }
   };
 
-  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ
-  let filteredProducts =
-    activeTab === 'Всі'
-      ? [...products]
-      : products.filter(
-          (item) =>
-            item.storage_places?.name === activeTab
-        );
+  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ (DTO)
+let filteredProducts =
+  activeTab === 'Всі'
+    ? [...products]
+    : products.filter(
+        (item) =>
+          item.storage_places?.name === activeTab
+      );
 
   // 🔎 ПОШУК
   if (searchText.trim() !== '') {
@@ -93,21 +97,21 @@ export default function Products() {
 
   // 📅 НАЙБЛИЖЧІ
   if (filterType === 'dateAsc') {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) =>
-        new Date(a.expiration_date.split('-').reverse().join('-')).getTime() -
-        new Date(b.expiration_date.split('-').reverse().join('-')).getTime()
-    );
-  }
+  filteredProducts = [...filteredProducts].sort(
+    (a, b) =>
+      new Date(a.expiration_date || 0).getTime() -
+      new Date(b.expiration_date || 0).getTime()
+  );
+}
 
   // 📅 НАЙПІЗНІШІ
   if (filterType === 'dateDesc') {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) =>
-        new Date(b.expiration_date.split('-').reverse().join('-')).getTime() -
-        new Date(a.expiration_date.split('-').reverse().join('-')).getTime()
-    );
-  }
+  filteredProducts = [...filteredProducts].sort(
+    (a, b) =>
+      new Date(b.expiration_date || 0).getTime() -
+      new Date(a.expiration_date || 0).getTime()
+  );
+}
 
   if (loading) {
     return (
@@ -259,10 +263,8 @@ export default function Products() {
           <TouchableOpacity
             onPress={() => {
               setSearchText('');
-              router.push({
-                pathname: '/product-details',
-                params: { id: item.id },
-              });
+              console.log("CLICKED PRODUCT ID:", item.id);
+              router.push(`/product-details?id=${item.id}`);
             }}
           >
             <ProductCard product={item} />
