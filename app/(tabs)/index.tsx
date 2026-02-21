@@ -17,7 +17,7 @@ import { SideMenu } from "../../components/SideMenu";
 
 import { removeToken } from "@/src/storage/token";
 
-const API_URL = 'https://myfridgebackend.onrender.com/api/Products';
+const API_URL = 'https://myfridgebackend.onrender.com/api/products';
 
 export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
