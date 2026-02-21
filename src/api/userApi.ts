@@ -1,65 +1,44 @@
-import { getToken } from "../storage/token";
+import { getToken } from "@/src/storage/token";
 
-const BASE_URL = "https://myfridgebackend.onrender.com/api/users";
+const BASE = "https://myfridgebackend.onrender.com";
 
-async function parseResponse(response: Response, label: string) {
-  const text = await response.text(); // читаємо як текст, щоб не падати на пустому body
-
-  if (!response.ok) {
-    throw new Error(`${label}: ${response.status} ${text}`);
-  }
-
-  // якщо бек повернув пусто (часто так буває на DELETE / POST)
-  if (!text) return null;
-
-  // якщо це JSON — парсимо, якщо ні — повернемо як текст
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-}
-
-export async function getMe() {
+async function authHeaders() {
   const token = await getToken();
   if (!token) throw new Error("Немає токена");
 
-  const response = await fetch(`${BASE_URL}/me`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`, // ✅ бектики
-    },
-  });
-
-  return parseResponse(response, "GET /me");
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
 }
 
-export async function createProfile(email: string) {
-  const token = await getToken();
-  if (!token) throw new Error("Немає токена");
+export async function patchProfile(payload: { name: string }) {
+  const headers = await authHeaders();
 
-  const response = await fetch(`${BASE_URL}/profile`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // ✅ бектики
-    },
-    body: JSON.stringify({ email }),
+  const res = await fetch(`${BASE}/api/users/profile`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(payload),
   });
 
-  return parseResponse(response, "POST /profile");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
 }
 
 export async function deleteProfile() {
-  const token = await getToken();
-  if (!token) throw new Error("Немає токена");
+  const headers = await authHeaders();
 
-  const response = await fetch(`${BASE_URL}/profile`, {
+  const res = await fetch(`${BASE}/api/users/profile`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`, // ✅ бектики
-    },
+    headers,
   });
 
-  return parseResponse(response, "DELETE /profile");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
 }

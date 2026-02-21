@@ -15,6 +15,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
 import { login as apiLogin } from "@/src/api/authApi";
+import { saveToken } from "@/src/storage/token";
+import { saveProfileEmail } from "@/src/storage/profile";
 
 const { width } = Dimensions.get("window");
 
@@ -48,21 +50,25 @@ export default function LoginScreen() {
   };
 
   const onLogin = async () => {
-    if (!validate()) return;
+  try {
+    setLoading(true);
+    setErrors({});
 
-    try {
-      setServerError(null);
-      setLoading(true);
+    // 🔹 Викликаємо логін
+    const token = await apiLogin(email.trim(), password);
 
-      await apiLogin(email.trim(), password);
+    // 🔹 Зберігаємо пошту для профілю
+    await saveProfileEmail(email.trim());
 
-      router.replace("/(tabs)");
-    } catch (e: any) {
-      setServerError(e?.message ?? "Помилка входу");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 🔹 Переходимо в додаток
+    router.replace("/(tabs)");
+
+  } catch (e: any) {
+    setErrors(e?.message ?? "Помилка входу");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const onChangeEmail = (v: string) => {
     setEmail(v);
