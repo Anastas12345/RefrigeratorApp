@@ -1,22 +1,25 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import {
   ActivityIndicator,
   FlatList,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  TextInput,
 } from 'react-native';
+
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
+import { Image, Pressable } from "react-native";
 import ProductCard from '../../components/ProductCard';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
-import { Pressable, Image } from "react-native";
-import { SideMenu } from "@/components/SideMenu";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SideMenu } from "../../components/SideMenu";
+
 import { removeToken } from "@/src/storage/token";
 
-/*const API_URL = 'https://myfridgebackend.onrender.com/api/Products';*/
+const API_URL = 'https://myfridgebackend.onrender.com/api/products';
 
 export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
@@ -27,45 +30,56 @@ export default function Products() {
     useState<null | 'favorites' | 'dateAsc' | 'dateDesc'>(null);
 
   const [activeTab, setActiveTab] = useState('Всі');
-const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => {
-    loadMockProducts();
-  }, []);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const loadMockProducts = () => {
-    setProducts(MOCK_PRODUCTS);
-    setLoading(false);
-  };
-
-  /*useEffect(() => { НОРМ
+  useFocusEffect(
+  useCallback(() => {
     fetchProducts();
-  }, []);
+  }, [])
+);
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(API_URL);
+      setLoading(true);
+      setError(null);
+
+      const token = await AsyncStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Токен відсутній');
+      }
+
+      const response = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
-        throw new Error('Помилка завантаження');
+        throw new Error(`Помилка ${response.status}`);
       }
 
       const data = await response.json();
       setProducts(data);
-    } catch (err) {
+console.log("BACKEND PRODUCTS:", data);
+    } catch (err: any) {
+      console.log('FETCH ERROR:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };*/
+  };
 
-  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ
-  let filteredProducts =
-    activeTab === 'Всі'
-      ? [...products]
-      : products.filter(
-          (item) =>
-            item.storage_places?.name === activeTab
-        );
+  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ (DTO)
+let filteredProducts =
+  activeTab === 'Всі'
+    ? [...products]
+    : products.filter(
+        (item) =>
+          item.storage_places?.name === activeTab
+      );
 
   // 🔎 ПОШУК
   if (searchText.trim() !== '') {
@@ -83,21 +97,21 @@ const [menuOpen, setMenuOpen] = useState(false);
 
   // 📅 НАЙБЛИЖЧІ
   if (filterType === 'dateAsc') {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) =>
-        new Date(a.expiration_date.split('-').reverse().join('-')).getTime() -
-        new Date(b.expiration_date.split('-').reverse().join('-')).getTime()
-    );
-  }
+  filteredProducts = [...filteredProducts].sort(
+    (a, b) =>
+      new Date(a.expiration_date || 0).getTime() -
+      new Date(b.expiration_date || 0).getTime()
+  );
+}
 
   // 📅 НАЙПІЗНІШІ
   if (filterType === 'dateDesc') {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) =>
-        new Date(b.expiration_date.split('-').reverse().join('-')).getTime() -
-        new Date(a.expiration_date.split('-').reverse().join('-')).getTime()
-    );
-  }
+  filteredProducts = [...filteredProducts].sort(
+    (a, b) =>
+      new Date(b.expiration_date || 0).getTime() -
+      new Date(a.expiration_date || 0).getTime()
+  );
+}
 
   if (loading) {
     return (
@@ -114,11 +128,17 @@ const [menuOpen, setMenuOpen] = useState(false);
       </View>
     );
   }
-  
+
   return (
-    
     <View
-    style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20, paddingTop: 70, backgroundColor: '#EAF6FA' }}>
+      style={{
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        paddingTop: 70,
+        backgroundColor: '#EAF6FA'
+      }}
+    >
       {/* Заголовок */}
       <Text
         style={{
@@ -130,38 +150,40 @@ const [menuOpen, setMenuOpen] = useState(false);
       >
         Продукти
       </Text>
-<Pressable
-  onPress={() => setMenuOpen(true)}
-  style={{ position: "absolute", top: 70, left: 12, zIndex: 999 }}
-  hitSlop={12}
->
-  <Image
-    source={require("@/assets/images/fridge-menu.png")}
-    style={{ width: 32, height: 32 }}
-    resizeMode="contain"
-  />
-</Pressable>
 
-<SideMenu
-  visible={menuOpen}
-  onClose={() => setMenuOpen(false)}
-  onGoProducts={() => {
-    setMenuOpen(false);
-    router.replace("/(tabs)");
-  }}
-  onGoAddProduct={() => {
-    setMenuOpen(false);
-    router.push("/add-product");
-  }}
-  onGoProfile={() => {
-    setMenuOpen(false);
-    router.push("/profile");
-  }}
-  onLogout={async () => {
-    await removeToken();
-    router.replace("/login");
-  }}
-/>
+      <Pressable
+        onPress={() => setMenuOpen(true)}
+        style={{ position: "absolute", top: 70, left: 12, zIndex: 999 }}
+        hitSlop={12}
+      >
+        <Image
+          source={require("@/assets/images/fridge-menu.png")}
+          style={{ width: 32, height: 32 }}
+          resizeMode="contain"
+        />
+      </Pressable>
+
+      <SideMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onGoProducts={() => {
+          setMenuOpen(false);
+          router.replace("/(tabs)");
+        }}
+        onGoAddProduct={() => {
+          setMenuOpen(false);
+          router.push("/add-product");
+        }}
+        onGoProfile={() => {
+          setMenuOpen(false);
+          router.push("/profile");
+        }}
+        onLogout={async () => {
+          await removeToken();
+          router.replace("/login");
+        }}
+      />
+
       {/* Таби */}
       <View
         style={{
@@ -234,15 +256,15 @@ const [menuOpen, setMenuOpen] = useState(false);
       {/* Список продуктів */}
       <FlatList
         data={filteredProducts}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) =>
+  item?.id ? item.id.toString() : index.toString()
+}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => {
-              setSearchText(''); // 🔥 очищаємо пошук
-              router.push({
-                pathname: '/product-details',
-                params: { id: item.id },
-              });
+              setSearchText('');
+              console.log("CLICKED PRODUCT ID:", item.id);
+              router.push(`/product-details?id=${item.id}`);
             }}
           >
             <ProductCard product={item} />

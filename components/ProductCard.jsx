@@ -1,6 +1,11 @@
 import { View, Text } from 'react-native';
 
 export default function ProductCard({ product }) {
+
+  const formattedDate = product.expiration_date
+    ? new Date(product.expiration_date).toLocaleDateString('uk-UA')
+    : '—';
+
   return (
     <View
       style={{
@@ -26,10 +31,9 @@ export default function ProductCard({ product }) {
       </View>
 
       <Text style={{ color: '#999', marginTop: 4 }}>
-        {product.expiration_date}
+        {formattedDate}
       </Text>
 
-      {/* лінія терміну придатності — ПОКИ ФЕЙК */}
       <View
         style={{
           height: 6,
@@ -49,7 +53,7 @@ export default function ProductCard({ product }) {
       </View>
 
       <Text style={{ fontSize: 12, color: '#999' }}>
-        {product.storage_places?.name}
+        {product.storage_places?.name || '—'}
       </Text>
     </View>
   );

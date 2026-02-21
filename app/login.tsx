@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { login as apiLogin } from "@/src/api/authApi";
 import { saveToken } from "@/src/storage/token";
