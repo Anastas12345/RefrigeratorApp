@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -10,32 +11,112 @@ import {
   View,
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
-import { MOCK_PRODUCTS, updateMockProduct } from '../data/mockProducts';
+
+const API_URL = 'https://myfridgebackend.onrender.com/api/products';
+const STORAGE_API =
+  'https://myfridgebackend.onrender.com/api/StoragePlace/all';
 
 export default function EditProduct() {
-  const params = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
 
-  const product = MOCK_PRODUCTS.find((p) => p.id === params.id);
+  const [storagePlaces, setStoragePlaces] = useState([]);
+  const [storageId, setStorageId] = useState(null);
 
-  const [name, setName] = useState(product?.name || '');
-  const [quantity, setQuantity] = useState(
-    product?.quantity ? String(product.quantity) : ''
-  );
-  const [unit, setUnit] = useState(product?.unit || 'шт');
+  const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [unit, setUnit] = useState('pcs');
   const [showUnits, setShowUnits] = useState(false);
-  const [expiration, setExpiration] = useState(
-    product?.expiration_date || ''
-  );
-  const [comment, setComment] = useState(product?.comment || '');
-  const [storage, setStorage] = useState(
-    product?.storage_places?.name || 'Холодильник'
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    CATEGORIES.find((c) => c.id === product?.categoryId) || null
-  );
+  const [expiration, setExpiration] = useState('');
+  const [comment, setComment] = useState('');
+  const [storage, setStorage] = useState('Холодильник');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [errors, setErrors] = useState({});
 
-  const UNITS = ['шт', 'кг', 'г', 'л', 'мл'];
+  const UNITS = ['pcs', 'kg', 'g', 'l', 'ml'];
+
+  useEffect(() => {
+    if (!id) return;
+    loadData();
+  }, [id]);
+
+  const loadData = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) return;
+
+    const EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
+
+    // 1️⃣ Завантажуємо storage
+    const storageRes = await fetch(STORAGE_API, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!storageRes.ok) {
+      console.log("STORAGE LOAD ERROR:", await storageRes.text());
+      return;
+    }
+
+    const storageData = await storageRes.json();
+    setStoragePlaces(storageData);
+
+    // 2️⃣ Завантажуємо продукт
+    const productRes = await fetch(`${API_URL}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!productRes.ok) {
+      console.log("PRODUCT LOAD ERROR:", await productRes.text());
+      return;
+    }
+
+    const data = await productRes.json();
+
+    setName(data.name || '');
+    setQuantity(data.quantity ? String(data.quantity) : '');
+    setUnit(data.unit || 'pcs');
+    setComment(data.comments || '');
+
+    // 📅 Дата
+    if (data.expiration_date) {
+      const d = new Date(data.expiration_date);
+      const formatted = `${String(d.getDate()).padStart(2, '0')}-${String(
+        d.getMonth() + 1
+      ).padStart(2, '0')}-${d.getFullYear()}`;
+      setExpiration(formatted);
+    }
+
+    // 🧊 STORAGE — ІГНОРУЄМО Guid.Empty
+    const backendStorageId = data.storage_places?.id;
+
+    if (
+      backendStorageId &&
+      backendStorageId !== EMPTY_GUID
+    ) {
+      setStorageId(backendStorageId);
+      setStorage(data.storage_places.name);
+    } else if (storageData.length > 0) {
+      // якщо бек повернув null або Guid.Empty
+      const defaultStorage = storageData[0];
+      setStorageId(defaultStorage.id);
+      setStorage(defaultStorage.name);
+    } else {
+      console.log("NO STORAGE AVAILABLE");
+      setStorageId(null);
+    }
+
+    // 🏷 Категорія
+    const savedCategory = await AsyncStorage.getItem(
+      `category_${id}`
+    );
+
+    if (savedCategory) {
+      setSelectedCategory(JSON.parse(savedCategory));
+    }
+
+  } catch (err) {
+    console.log('EDIT LOAD ERROR:', err);
+  }
+};
 
   const formatDate = (text) => {
     const cleaned = text.replace(/\D/g, '');
@@ -67,21 +148,60 @@ export default function EditProduct() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
 
-    updateMockProduct({
-      id: product.id,
-      name,
-      quantity: Number(quantity),
-      unit,
-      expiration_date: expiration,
-      comment,
-      storage_places: { name: storage },
-      categoryId: selectedCategory.id,
-    });
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
 
-    router.replace('/(tabs)');
+      if (!storageId) {
+        console.log('INVALID STORAGE ID');
+        return;
+      }
+
+      const [day, month, year] = expiration.split('-');
+      const isoDate = `${year}-${month}-${day}`;
+
+      const updatedProduct = {
+        name: name.trim(),
+        quantity: Number(quantity),
+        unit,
+        expiration_date: isoDate,
+        comments: comment,
+        storage_place_id: storageId,
+      };
+
+      console.log('PATCH ID:', id);
+      console.log('STORAGE ID:', storageId);
+      console.log('PAYLOAD:', updatedProduct);
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProduct),
+      });
+
+      if (!response.ok) {
+        console.log(await response.text());
+        return;
+      }
+
+      await AsyncStorage.setItem(
+        `category_${id}`,
+        JSON.stringify(selectedCategory)
+      );
+
+      await new Promise((r) => setTimeout(r, 300));
+
+      router.replace('/(tabs)');
+
+    } catch (error) {
+      console.log('EDIT SAVE ERROR:', error);
+    }
   };
 
   return (
@@ -90,6 +210,7 @@ export default function EditProduct() {
       onPress={() => setShowUnits(false)}
     >
       <ScrollView style={{ flex: 1, backgroundColor: '#CFE8F1' }}>
+
         {/* Верхня дуга */}
         <View
           style={{
@@ -107,6 +228,7 @@ export default function EditProduct() {
         </View>
 
         <View style={{ padding: 20 }}>
+
           {/* Назва */}
           <View style={sectionStyle}>
             <Text style={labelStyle}>Назва продукту</Text>
@@ -115,11 +237,6 @@ export default function EditProduct() {
               onChangeText={setName}
               style={[inputStyle, errors.name && errorBorder]}
             />
-            {errors.name && (
-              <Text style={errorText}>
-                Ви повинні ввести назву продукту
-              </Text>
-            )}
           </View>
 
           {/* Кількість */}
@@ -174,28 +291,29 @@ export default function EditProduct() {
                 )}
               </View>
             </View>
-
-            {errors.quantity && (
-              <Text style={errorText}>
-                Ви повинні вказати кількість
-              </Text>
-            )}
           </View>
 
-          {/* Місце зберігання */}
+          {/* Storage */}
           <View style={sectionStyle}>
             <Text style={labelStyle}>Місце зберігання</Text>
 
             <TouchableOpacity
-              onPress={() =>
-                setStorage(
-                  storage === 'Холодильник'
-                    ? 'Морозилка'
-                    : storage === 'Морозилка'
-                    ? 'Комора'
-                    : 'Холодильник'
-                )
-              }
+              onPress={() => {
+                if (!storagePlaces.length) return;
+
+                const currentIndex = storagePlaces.findIndex(
+                  (s) => s.id === storageId
+                );
+
+                const nextIndex =
+                  currentIndex === -1 ||
+                  currentIndex === storagePlaces.length - 1
+                    ? 0
+                    : currentIndex + 1;
+
+                setStorage(storagePlaces[nextIndex].name);
+                setStorageId(storagePlaces[nextIndex].id);
+              }}
             >
               <View
                 style={{
@@ -217,12 +335,6 @@ export default function EditProduct() {
           <View style={sectionStyle}>
             <Text style={labelStyle}>Категорії</Text>
 
-            {errors.category && (
-              <Text style={errorText}>
-                Ви повинні обрати категорію
-              </Text>
-            )}
-
             <View
               style={{
                 flexDirection: 'row',
@@ -236,7 +348,7 @@ export default function EditProduct() {
                   key={cat.id}
                   onPress={() => setSelectedCategory(cat)}
                   style={{
-                    width: '25%',
+                    width: '23%',
                     alignItems: 'center',
                     marginBottom: 15,
                   }}
@@ -278,7 +390,6 @@ export default function EditProduct() {
           {/* Дата */}
           <View style={sectionStyle}>
             <Text style={labelStyle}>Термін придатності</Text>
-
             <TextInput
               value={expiration}
               onChangeText={formatDate}
@@ -286,12 +397,6 @@ export default function EditProduct() {
               maxLength={10}
               style={[inputStyle, errors.expiration && errorBorder]}
             />
-
-            {errors.expiration && (
-              <Text style={errorText}>
-                Ви повинні вказати термін придатності
-              </Text>
-            )}
           </View>
 
           {/* Коментар */}
@@ -305,7 +410,6 @@ export default function EditProduct() {
             />
           </View>
 
-          {/* Кнопка */}
           <TouchableOpacity
             onPress={handleSave}
             style={{
@@ -320,13 +424,12 @@ export default function EditProduct() {
               Зберегти
             </Text>
           </TouchableOpacity>
+
         </View>
       </ScrollView>
     </Pressable>
   );
 }
-
-/* ===== СТИЛІ ===== */
 
 const sectionStyle = {
   backgroundColor: '#D9EEF6',
@@ -350,10 +453,4 @@ const inputStyle = {
 
 const errorBorder = {
   borderColor: '#FF3B30',
-};
-
-const errorText = {
-  color: '#FF3B30',
-  marginTop: 6,
-  fontSize: 12,
 };

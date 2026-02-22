@@ -14,5 +14,6 @@ export const CATEGORIES = [
   { id: 13, name: 'Горіхи', color: '#8B5E3C', icon: 'peanut' },
   { id: 14, name: 'Яйця', color: '#F8E8C6', icon: 'egg' },
   { id: 15, name: 'Готові страви', color: '#D35400', icon: 'food' },
-  { id: 16, name: 'Інше', color: '#D5D8DC', icon: 'dots-horizontal' },
+  { id: 16, name: 'Алкоголь', color: '#8e2c4a', icon: 'glass-cocktail' },
+  { id: 17, name: 'Інше', color: '#D5D8DC', icon: 'dots-horizontal' },
 ];

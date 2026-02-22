@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   SafeAreaView,
   View,
@@ -13,11 +15,8 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { login as apiLogin } from "@/src/api/authApi";
-import { saveToken } from "@/src/storage/token";
-import { saveProfileEmail } from "@/src/storage/profile";
 
 const { width } = Dimensions.get("window");
 
@@ -51,25 +50,28 @@ export default function LoginScreen() {
   };
 
   const onLogin = async () => {
-  try {
-    setLoading(true);
-    setErrors({});
+  if (!validate()) return;
 
-    // 🔹 Викликаємо логін
+  try {
+    setServerError(null);
+    setLoading(true);
+
+    // 🔥 отримуємо токен
     const token = await apiLogin(email.trim(), password);
 
-    // 🔹 Зберігаємо пошту для профілю
-    await saveProfileEmail(email.trim());
+    console.log("NEW TOKEN:", token);
 
-    // 🔹 Переходимо в додаток
+    // 🔥 примусово перезаписуємо токен
+    await AsyncStorage.setItem("token", token);
+
     router.replace("/(tabs)");
-
   } catch (e: any) {
-    setErrors(e?.message ?? "Помилка входу");
+    setServerError(e?.message ?? "Помилка входу");
   } finally {
     setLoading(false);
   }
 };
+
 
   const onChangeEmail = (v: string) => {
     setEmail(v);
