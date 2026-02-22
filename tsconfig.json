@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "app/notific.jsx"  ]
+, "app/notific.jsx", "app/add-product.jsx", "app/ai-scan.jsx", "app/batch-confirm.jsx", "components/AddOptionsModal.jsx"  ]
 }

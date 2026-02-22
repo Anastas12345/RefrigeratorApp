@@ -16,8 +16,9 @@ import { useCallback } from 'react';
 import { Image, Pressable } from "react-native";
 import ProductCard from '../../components/ProductCard';
 import { SideMenu } from "../../components/SideMenu";
-
 import { removeToken } from "@/src/storage/token";
+import AddOptionsModal from '../../components/AddOptionsModal';
+
 
 const API_URL = 'https://myfridgebackend.onrender.com/api/products';
 
@@ -31,6 +32,8 @@ export default function Products() {
 
   const [activeTab, setActiveTab] = useState('Всі');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+
 
   useFocusEffect(
   useCallback(() => {
@@ -292,7 +295,7 @@ let filteredProducts =
           alignItems: 'center',
           elevation: 5,
         }}
-        onPress={() => router.push('/add-product')}
+        onPress={() => setShowAddModal(true)}
       >
         <Text
           style={{
@@ -305,6 +308,10 @@ let filteredProducts =
           +
         </Text>
       </TouchableOpacity>
+      <AddOptionsModal
+  visible={showAddModal}
+  onClose={() => setShowAddModal(false)}
+/>
     </View>
   );
 }
