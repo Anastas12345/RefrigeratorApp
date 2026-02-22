@@ -174,6 +174,10 @@ let filteredProducts =
           setMenuOpen(false);
           router.push("/add-product");
         }}
+        onGoNotes={() => {
+          setMenuOpen(false);
+          router.push("/notes");
+        }}
         onGoProfile={() => {
           setMenuOpen(false);
           router.push("/profile");
