@@ -18,6 +18,7 @@ import ProductCard from '../../components/ProductCard';
 import { SideMenu } from "../../components/SideMenu";
 
 import { removeToken } from "@/src/storage/token";
+import { Ionicons } from "@expo/vector-icons";
 
 const API_URL = 'https://myfridgebackend.onrender.com/api/products';
 
@@ -277,7 +278,32 @@ let filteredProducts =
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
-
+{/* Кнопка AI */}
+<TouchableOpacity
+  style={{
+    position: 'absolute',
+    bottom: 100,
+    right: 25,
+    backgroundColor: '#4A90E2',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  }}
+  onPress={() => router.push('/ai-helper')}
+>
+  <Text
+    style={{
+      color: '#fff',
+      fontSize: 20,
+      fontWeight: '700',
+    }}
+  >
+    <Ionicons name="restaurant-outline" size={26} color="#fff" />
+  </Text>
+</TouchableOpacity>
       {/* Кнопка + */}
       <TouchableOpacity
         style={{

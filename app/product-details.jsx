@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
+import { CATEGORIES } from "../constants/categories";
 const API_URL = 'https://myfridgebackend.onrender.com/api/products';
 
 export default function ProductDetails() {
@@ -39,9 +39,24 @@ export default function ProductDetails() {
     setProduct(data);
 
     // 🔥 ОТУТ читаємо категорію
-    const savedCategory = await AsyncStorage.getItem(
-      `category_${data.id}`
+    // 🔥 Читаємо з нового об'єкта productCategories
+const stored = await AsyncStorage.getItem("productCategories");
+
+if (stored) {
+  const categoriesMap = JSON.parse(stored);
+
+  const categoryId = categoriesMap[data.id];
+
+  if (categoryId) {
+    const categoryObj = CATEGORIES.find(
+      (cat) => cat.id === categoryId
     );
+
+    if (categoryObj) {
+      setCategory(categoryObj);
+    }
+  }
+}
 
     console.log("TRY LOAD CATEGORY FOR:", data.id);
     console.log("RAW CATEGORY VALUE:", savedCategory);

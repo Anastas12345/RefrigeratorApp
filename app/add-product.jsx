@@ -137,11 +137,24 @@ const handleSubmit = async () => {
     const createdProduct = await response.json();
 
     // 🔥 ОСЬ ГОЛОВНЕ — зберігаємо категорію локально
-   await AsyncStorage.setItem(
-  `category_${createdProduct.id}`,
-  JSON.stringify(selectedCategory)
+   // 🔥 Зберігаємо всі категорії в одному об'єкті
+
+const stored = await AsyncStorage.getItem("productCategories");
+let categoriesMap = stored ? JSON.parse(stored) : {};
+
+// зберігаємо ТІЛЬКИ id категорії
+categoriesMap[createdProduct.id] = selectedCategory.id;
+
+await AsyncStorage.setItem(
+  "productCategories",
+  JSON.stringify(categoriesMap)
 );
-console.log("SAVED CATEGORY:", createdProduct.id, selectedCategory.id);
+
+console.log(
+  "SAVED CATEGORY:",
+  createdProduct.id,
+  selectedCategory.id
+);
     router.back();
 
   } catch (error) {
