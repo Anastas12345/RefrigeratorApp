@@ -82,8 +82,6 @@ export function SideMenu({
     title: "Нотатки",
     icon: "document-text-outline",
     onPress: onGoNotes,
-    disabled: !onGoNotes,
-    badgeText: "Soon",
   },
   {
     key: "profile",
