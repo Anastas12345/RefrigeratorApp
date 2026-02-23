@@ -18,8 +18,13 @@ import { Image, Pressable } from "react-native";
 import ProductCard from '../../components/ProductCard';
 import { SideMenu } from "../../components/SideMenu";
 
+
+
+
 import { Ionicons } from "@expo/vector-icons";
 import AddOptionsModal from '../../components/AddOptionsModal';
+
+import { checkDailyExpiringProducts } from '../../notification/dailyExpirationCheck';
 
 
 const API_URL = 'https://myfridgebackend.onrender.com/api/products';
@@ -34,8 +39,36 @@ export default function Products() {
 
   const [activeTab, setActiveTab] = useState('Всі');
   const [menuOpen, setMenuOpen] = useState(false);
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [storageMap, setStorageMap] = useState({});
+  const [expiringCount, setExpiringCount] = useState(0);
+
+  const fetchExpiringCount = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return;
+
+    const response = await fetch(
+      "https://myfridgebackend.onrender.com/api/products?expirationCategory=soon",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = await response.json();
+    setExpiringCount(data.length);
+  } catch (e) {
+    console.log("COUNT ERROR:", e);
+  }
+};
+useFocusEffect(
+  useCallback(() => {
+    fetchProducts();
+    fetchExpiringCount();
+  }, [])
+);
+
 
 
   useFocusEffect(
@@ -77,7 +110,20 @@ console.log("BACKEND PRODUCTS:", data);
       setLoading(false);
     }
   };
+useFocusEffect(
+  useCallback(() => {
+    fetchProducts();
 
+    const runCheck = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        await checkDailyExpiringProducts(token);
+      }
+    };
+
+    runCheck();
+  }, [])
+);
   // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ (DTO)
 let filteredProducts =
   activeTab === 'Всі'
@@ -168,7 +214,49 @@ let filteredProducts =
           resizeMode="contain"
         />
       </Pressable>
+<Pressable
+  onPress={() => setMenuOpen(true)}
+  style={{ position: "absolute", top: 70, left: 12, zIndex: 999 }}
+  hitSlop={12}
+>
+  <Image
+    source={require("@/assets/images/fridge-menu.png")}
+    style={{ width: 32, height: 32 }}
+    resizeMode="contain"
+  />
+</Pressable>
 
+{/* 🔔 Дзвіночок */}
+<TouchableOpacity
+  onPress={() => router.push("/expiring-products")}
+  style={{
+    position: "absolute",
+    top: 70,
+    right: 20,
+    zIndex: 999,
+  }}
+>
+  <Ionicons name="notifications-outline" size={28} color="#333" />
+
+  {expiringCount > 0 && (
+    <View
+      style={{
+        position: "absolute",
+        top: -4,
+        right: -6,
+        backgroundColor: "#FF3B30",
+        borderRadius: 10,
+        paddingHorizontal: 6,
+        minWidth: 18,
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
+        {expiringCount}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
       <SideMenu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
