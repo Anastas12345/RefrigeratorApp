@@ -11,12 +11,12 @@ import {
   View,
 } from 'react-native';
 
+import { removeToken } from "@/src/storage/token";
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { Image, Pressable } from "react-native";
 import ProductCard from '../../components/ProductCard';
 import { SideMenu } from "../../components/SideMenu";
-import { removeToken } from "@/src/storage/token";
 
 import { Ionicons } from "@expo/vector-icons";
 import AddOptionsModal from '../../components/AddOptionsModal';
@@ -35,6 +35,7 @@ export default function Products() {
   const [activeTab, setActiveTab] = useState('Всі');
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [storageMap, setStorageMap] = useState({});
 
 
   useFocusEffect(
