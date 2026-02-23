@@ -94,7 +94,7 @@ export default function AiScan() {
         quantity: item.quantity ?? 1,
         unit: item.unit ?? 'шт',
         categoryId: CATEGORY_MAP[item.category] ?? 1,
-        expiration_date: formatDate(item.expiryDate),
+        expiration_date: item.expiryDate,
       }));
 
       router.replace({

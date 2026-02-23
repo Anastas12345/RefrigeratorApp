@@ -65,19 +65,18 @@ export default function BatchConfirm() {
   return fridge?.id;
 };
 
-  const handleSaveAll = async () => {
+const handleSaveAll = async () => {
   try {
     const token = await AsyncStorage.getItem('token');
     const storagePlaceId = await getStoragePlaceId();
 
     const payload = items.map((item) => ({
-      name: item.name,
-      quantity: Number(item.quantity),
-      unit: item.unit,
-      expiration_date: item.expiration_date,
-      categoryId: item.categoryId,
-      storage_place_id: storagePlaceId,
-      comments: item.comment,
+      Name: item.name,
+      Quantity: Number(item.quantity),
+      Unit: item.unit,
+      Expiration_Date: item.expiration_date,
+      Storage_Place_Id: storagePlaceId,
+      Comment: item.comment || "",
     }));
 
     const response = await fetch(
@@ -94,13 +93,50 @@ export default function BatchConfirm() {
 
     if (!response.ok) {
       const text = await response.text();
-      console.log('BATCH SAVE ERROR:', text);
+      console.log("BATCH SAVE ERROR:", text);
       return;
     }
 
+    // 🔥 ТЕПЕР ОТРИМУЄМО ВСІ ПРОДУКТИ
+    const productsResponse = await fetch(
+      'https://myfridgebackend.onrender.com/api/products',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!productsResponse.ok) {
+      console.log("GET PRODUCTS ERROR");
+      router.replace('/(tabs)');
+      return;
+    }
+
+    const allProducts = await productsResponse.json();
+
+    // 🔥 Беремо останні створені
+    const lastCreated = allProducts
+      .slice(-items.length);
+
+    // 🔥 Зберігаємо категорії локально
+    for (let i = 0; i < lastCreated.length; i++) {
+      const selectedCat = CATEGORIES.find(
+        c => c.id === items[i].categoryId
+      );
+
+      if (selectedCat) {
+        await AsyncStorage.setItem(
+          `category_${lastCreated[i].id}`,
+          JSON.stringify(selectedCat)
+        );
+      }
+    }
+
     router.replace('/(tabs)');
+
   } catch (error) {
-    console.log('BATCH ERROR:', error);
+    console.log("BATCH ERROR:", error);
   }
 };
 
