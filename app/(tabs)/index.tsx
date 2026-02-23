@@ -270,15 +270,20 @@ let filteredProducts =
   item?.id ? item.id.toString() : index.toString()
 }
         renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => {
-              setSearchText('');
-              console.log("CLICKED PRODUCT ID:", item.id);
-              router.push(`/product-details?id=${item.id}`);
-            }}
-          >
-            <ProductCard product={item} />
-          </TouchableOpacity>
+          <Pressable
+  onPress={() => {
+    setSearchText('');
+    router.push(`/product-details?id=${item.id}`);
+  }}
+  style={({ pressed }) => [
+    {
+      transform: [{ scale: pressed ? 0.99 : 1 }],
+      opacity: pressed ? 0.95 : 1,
+    },
+  ]}
+>
+  <ProductCard product={item} />
+</Pressable>
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
