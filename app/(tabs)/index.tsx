@@ -43,6 +43,8 @@ export default function Products() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [storageMap, setStorageMap] = useState({});
   const [expiringCount, setExpiringCount] = useState(0);
+   const [showAiHint, setShowAiHint] = useState(false)
+
 
   const fetchExpiringCount = async () => {
   try {
@@ -62,18 +64,30 @@ export default function Products() {
     console.log("COUNT ERROR:", e);
   }
 };
-useFocusEffect(
+ useFocusEffect(
   useCallback(() => {
+
     fetchProducts();
     fetchExpiringCount();
-  }, [])
-);
 
+    const runCheck = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        await checkDailyExpiringProducts(token);
+      }
+    };
 
+    const checkHint = async () => {
+      const seen = await AsyncStorage.getItem("aiHintSeen");
+      console.log("AI HINT SEEN:", seen); // додай це для перевірки
+      if (!seen) {
+        setShowAiHint(true);
+      }
+    };
 
-  useFocusEffect(
-  useCallback(() => {
-    fetchProducts();
+    runCheck();
+    checkHint();
+
   }, [])
 );
 
@@ -110,20 +124,7 @@ console.log("BACKEND PRODUCTS:", data);
       setLoading(false);
     }
   };
-useFocusEffect(
-  useCallback(() => {
-    fetchProducts();
 
-    const runCheck = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        await checkDailyExpiringProducts(token);
-      }
-    };
-
-    runCheck();
-  }, [])
-);
   // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ (DTO)
 let filteredProducts =
   activeTab === 'Всі'
@@ -180,7 +181,7 @@ let filteredProducts =
       </View>
     );
   }
-
+console.log("SHOW AI HINT:", showAiHint);
   return (
     <View
       style={{
@@ -376,32 +377,76 @@ let filteredProducts =
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
-{/* Кнопка AI */}
-<TouchableOpacity
-  style={{
-    position: 'absolute',
-    bottom: 100,
-    right: 25,
-    backgroundColor: '#4A90E2',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  }}
-  onPress={() => router.push('/ai-helper')}
->
-  <Text
+      {/* 🔥 Tooltip AI (ОДИН раз, поза FlatList) */}
+      {showAiHint && (
+  <Pressable
+    onPress={async () => {
+      await AsyncStorage.setItem("aiHintSeen", "true");
+      setShowAiHint(false);
+    }}
     style={{
-      color: '#fff',
-      fontSize: 20,
-      fontWeight: '700',
+      position: "absolute",
+      bottom: 170,
+      right: 20,
+      alignItems: "flex-end",
+      zIndex: 9999,
     }}
   >
-    <Ionicons name="restaurant-outline" size={26} color="#fff" />
-  </Text>
-</TouchableOpacity>
+    {/* Bubble */}
+    <View
+      style={{
+        backgroundColor: "#a8cff0",
+        padding: 14,
+        borderRadius: 16,
+        width: 230,
+        elevation: 8,
+      }}
+    >
+      <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+        🤖 AI Помічник
+      </Text>
+      <Text style={{ fontSize: 13, color: "#555" }}>
+        Допоможе придумати, що приготувати
+        з продуктів, які вже є у тебе.
+      </Text>
+    </View>
+
+    {/* Хвостик */}
+    <View
+      style={{
+        width: 0,
+        height: 0,
+        borderLeftWidth: 10,
+        borderRightWidth: 10,
+        borderTopWidth: 14,
+        borderLeftColor: "transparent",
+        borderRightColor: "transparent",
+        borderTopColor: "#a8cff0",
+        marginTop: -2,
+        marginRight: 25, // підганяємо до кнопки
+      }}
+    />
+  </Pressable>
+)}
+      
+{/* AI кнопка */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: 100,
+          right: 25,
+          backgroundColor: '#4A90E2',
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          justifyContent: 'center',
+          alignItems: 'center',
+          elevation: 6,
+        }}
+        onPress={() => router.push('/ai-helper')}
+      >
+        <Ionicons name="restaurant-outline" size={26} color="#fff" />
+      </TouchableOpacity>
       {/* Кнопка + */}
       <TouchableOpacity
         style={{
