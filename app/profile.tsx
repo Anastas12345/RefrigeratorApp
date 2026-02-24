@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   SafeAreaView,
@@ -136,7 +136,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <><Stack.Screen options={{ headerShown: false }} /><SafeAreaView style={styles.safe}>
       <View style={styles.headerBlob} />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -145,124 +145,138 @@ export default function ProfileScreen() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.container}>
-          {/* Заголовок */}
-          <Text style={styles.title}>Профіль</Text>
-          <Text style={styles.subtitle}>Налаштування акаунта</Text>
+            {/* Заголовок */}
+           {/* Header */}
+<View style={styles.headerRow}>
+  <Pressable
+    onPress={() => router.replace("/(tabs)")}
+    style={styles.backBtn}
+    hitSlop={10}
+  >
+    <Ionicons name="chevron-back" size={22} color={TEXT_GRAY} />
+  </Pressable>
 
-          {/* Карта */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.cardHeaderLeft}>
-                <View style={styles.iconBubble}>
-                  <Ionicons name="person-outline" size={18} color={ORANGE} />
+  <View style={{ flex: 1, alignItems: "center" }}>
+    <Text style={styles.title}>Профіль</Text>
+    <Text style={styles.subtitle}>Налаштування акаунта</Text>
+  </View>
+
+  {/* щоб заголовок був по центру */}
+  <View style={{ width: 40 }} />
+</View>
+
+            {/* Карта */}
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <View style={styles.cardHeaderLeft}>
+                  <View style={styles.iconBubble}>
+                    <Ionicons name="person-outline" size={18} color={ORANGE} />
+                  </View>
+                  <Text style={styles.cardTitle}>Дані користувача</Text>
                 </View>
-                <Text style={styles.cardTitle}>Дані користувача</Text>
               </View>
-            </View>
 
-              
 
-            {loadingLocal ? (
-              <View style={{ marginTop: 16, alignItems: "center" }}>
-                <ActivityIndicator />
-              </View>
-            ) : (
-              <>
-                {/* Email */}
-                <Text style={styles.label}>Пошта</Text>
-                <View style={styles.inputWrap}>
-                  <Ionicons name="mail-outline" size={18} color={TEXT_GRAY} />
-                  <TextInput
-                    value={email}
-                    editable={false}
-                    style={[styles.input, { opacity: 0.7 }]}
-                    placeholder="Немає пошти (увійди знову)"
-                    placeholderTextColor="#9AA7B2"
-                  />
+
+              {loadingLocal ? (
+                <View style={{ marginTop: 16, alignItems: "center" }}>
+                  <ActivityIndicator />
                 </View>
+              ) : (
+                <>
+                  {/* Email */}
+                  <Text style={styles.label}>Пошта</Text>
+                  <View style={styles.inputWrap}>
+                    <Ionicons name="mail-outline" size={18} color={TEXT_GRAY} />
+                    <TextInput
+                      value={email}
+                      editable={false}
+                      style={[styles.input, { opacity: 0.7 }]}
+                      placeholder="Немає пошти (увійди знову)"
+                      placeholderTextColor="#9AA7B2" />
+                  </View>
 
-                {/* Name */}
-                <Text style={styles.label}>Імʼя</Text>
-                <View style={styles.inputWrap}>
-                  <Ionicons name="text-outline" size={18} color={TEXT_GRAY} />
-                  <TextInput
-                    value={nameDraft}
-                    onChangeText={(v) => {
-                      setNameDraft(v);
-                      setSavedOk(null);
-                    }}
-                    placeholder="Введіть імʼя"
-                    placeholderTextColor="#9AA7B2"
-                    style={styles.input}
-                  />
-                  {!!nameDraft.trim() && (
-                    <View style={styles.okDot}>
-                      <Ionicons name="checkmark" size={14} color="#fff" />
+                  {/* Name */}
+                  <Text style={styles.label}>Імʼя</Text>
+                  <View style={styles.inputWrap}>
+                    <Ionicons name="text-outline" size={18} color={TEXT_GRAY} />
+                    <TextInput
+                      value={nameDraft}
+                      onChangeText={(v) => {
+                        setNameDraft(v);
+                        setSavedOk(null);
+                      } }
+                      placeholder="Введіть імʼя"
+                      placeholderTextColor="#9AA7B2"
+                      style={styles.input} />
+                    {!!nameDraft.trim() && (
+                      <View style={styles.okDot}>
+                        <Ionicons name="checkmark" size={14} color="#fff" />
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Error */}
+                  {!!error && (
+                    <View style={styles.errorBox}>
+                      <Ionicons name="warning-outline" size={18} color="#fff" />
+                      <Text style={styles.errorText}>{error}</Text>
                     </View>
                   )}
-                </View>
 
-                {/* Error */}
-                {!!error && (
-                  <View style={styles.errorBox}>
-                    <Ionicons name="warning-outline" size={18} color="#fff" />
-                    <Text style={styles.errorText}>{error}</Text>
-                  </View>
-                )}
+                  {/* Save */}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.primaryBtn,
+                      pressed && styles.pressed,
+                      (!changed || busy) && { opacity: 0.6 },
+                    ]}
+                    onPress={onSave}
+                    disabled={!changed || busy}
+                  >
+                    <Ionicons name="save-outline" size={18} color="#fff" />
+                    <Text style={styles.primaryBtnText}>
+                      {busy ? "Збереження..." : "Зберегти зміни"}
+                    </Text>
+                  </Pressable>
 
-                {/* Save */}
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.primaryBtn,
-                    pressed && styles.pressed,
-                    (!changed || busy) && { opacity: 0.6 },
-                  ]}
-                  onPress={onSave}
-                  disabled={!changed || busy}
-                >
-                  <Ionicons name="save-outline" size={18} color="#fff" />
-                  <Text style={styles.primaryBtnText}>
-                    {busy ? "Збереження..." : "Зберегти зміни"}
-                  </Text>
-                </Pressable>
+                  {/* Row buttons */}
+                  <Pressable
+                    style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed, busy && { opacity: 0.7 }]}
+                    onPress={onLogout}
+                    disabled={busy}
+                  >
+                    <Ionicons name="log-out-outline" size={18} color="#fff" />
+                    <Text style={styles.logoutBtnText}>Вийти</Text>
+                  </Pressable>
+                  {/* Delete */}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.deleteLink,
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={onDelete}
+                    disabled={busy}
+                  >
+                    <Ionicons name="trash-outline" size={16} color="#D43B33" />
+                    <Text style={styles.deleteLinkText}>
+                      Видалити профіль повністю
+                    </Text>
+                  </Pressable>
 
-                {/* Row buttons */}
-                <Pressable
-  style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed, busy && { opacity: 0.7 }]}
-  onPress={onLogout}
-  disabled={busy}
->
-  <Ionicons name="log-out-outline" size={18} color="#fff" />
-  <Text style={styles.logoutBtnText}>Вийти</Text>
-</Pressable>
-                {/* Delete */}
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.deleteLink,
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={onDelete}
-                  disabled={busy}
-                >
-                  <Ionicons name="trash-outline" size={16} color="#D43B33" />
-                  <Text style={styles.deleteLinkText}>
-                    Видалити профіль повністю
-                  </Text>
-                </Pressable>
-
-                {/* Saved status */}
-                {savedOk !== null && (
-                  <Text style={styles.savedLine}>
-                    Збережено: {savedOk ? "так ✅" : "ні ❌"}
-                  </Text>
-                )}
-              </>
-            )}
+                  {/* Saved status */}
+                  {savedOk !== null && (
+                    <Text style={styles.savedLine}>
+                      Збережено: {savedOk ? "так ✅" : "ні ❌"}
+                    </Text>
+                  )}
+                </>
+              )}
             </View>
           </View>
         </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
-    </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </SafeAreaView></>
   );
 }
 
@@ -278,7 +292,7 @@ const styles = StyleSheet.create({
 
   headerBlob: {
     position: "absolute",
-    top: -140,
+    top: -130,
     left: -80,
     right: -80,
     height: 240,
@@ -467,4 +481,21 @@ logoutBtnText: { color: "#fff", fontSize: 16, fontWeight: "900" },
     fontWeight: "900",
     textAlign: "center",
   },
+  headerRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 4,
+},
+
+backBtn: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: "rgba(255,255,255,0.9)",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 1,
+  borderColor: CARD_BORDER,
+},
 });
