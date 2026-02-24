@@ -74,8 +74,6 @@ export function SideMenu({
     title: "Улюблені",
     icon: "heart-outline",
     onPress: onGoFavorites,
-    disabled: !onGoFavorites,
-    badgeText: "Soon",
   },
   {
     key: "notes",
