@@ -2,6 +2,13 @@ import React from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { calculateProgress, getProgressColor } from "../constants/utils/dateProgress";
+const UNIT_LABELS = {
+  pcs: "шт",
+  kg: "кг",
+  g: "г",
+  l: "л",
+  ml: "мл",
+};
 
 export default function ProductCard({ product, onToggleFavorite, isLoadingFavorite }) {
   const formattedDate = product.expiration_date
@@ -71,7 +78,7 @@ export default function ProductCard({ product, onToggleFavorite, isLoadingFavori
         </Text>
 
         <Text style={{ fontSize: 14 }}>
-          {product.quantity} {product.unit}
+          {product.quantity} {UNIT_LABELS[product.unit] || product.unit}
         </Text>
       </View>
 

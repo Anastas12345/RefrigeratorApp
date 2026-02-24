@@ -35,11 +35,17 @@ export default function Products() {
   const [activeTab, setActiveTab] = useState("Всі");
   const [menuOpen, setMenuOpen] = useState(false);
 
+
   useFocusEffect(
     useCallback(() => {
       fetchAll();
     }, [])
   );
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [storageMap, setStorageMap] = useState({});
+  const [expiringCount, setExpiringCount] = useState(0);
+   const [showAiHint, setShowAiHint] = useState(false)
 
   const fetchAll = async () => {
   try {
@@ -85,12 +91,25 @@ export default function Products() {
     );
   }
 
-  // ❤️ УЛЮБЛЕНІ (фільтр — по нашому Set)
-  if (filterType === "favorites") {
-  filteredProducts = filteredProducts.filter((item) =>
-    favoritesIds.has(String(item.id))
-  );
-}
+      const data = await response.json();
+      setProducts(data);
+console.log("BACKEND PRODUCTS:", data);
+    } catch (err: any) {
+      console.log('FETCH ERROR:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔥 ФІЛЬТРАЦІЯ ПО МІСЦЮ ЗБЕРІГАННЯ (DTO)
+let filteredProducts =
+  activeTab === 'Всі'
+    ? [...products]
+    : products.filter(
+        (item) =>
+          item.storage_places?.name === activeTab
+      );
 
   // 📅 НАЙБЛИЖЧІ
   if (filterType === "dateAsc") {
@@ -158,7 +177,7 @@ export default function Products() {
       </View>
     );
   }
-
+console.log("SHOW AI HINT:", showAiHint);
   return (
     <View
       style={{

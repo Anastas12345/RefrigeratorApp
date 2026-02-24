@@ -30,7 +30,12 @@ export default function BatchConfirm() {
     quantity: p.quantity || 1,
     unit: p.unit || 'pcs',
     categoryId: p.categoryId || 1,
-    expiration_date: p.expiration_date || '',
+    expiration_date: p.expiration_date
+  ? (() => {
+      const [y, m, d] = p.expiration_date.split('-');
+      return `${d}-${m}-${y}`;
+    })()
+  : '',
     storage_places: { name: 'Холодильник' },
     comment: '',
   }));
@@ -40,12 +45,36 @@ export default function BatchConfirm() {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(null);
 
   const UNITS = ['pcs', 'kg', 'g', 'l', 'ml'];
+  const UNIT_LABELS = {
+  pcs: 'шт',
+  kg: 'кг',
+  g: 'г',
+  l: 'л',
+  ml: 'мл',
+};
 
   const updateField = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
     setItems(updated);
   };
+  const formatDateInput = (index, text) => {
+  const cleaned = text.replace(/\D/g, '');
+  let formatted = cleaned;
+
+  if (cleaned.length >= 3 && cleaned.length <= 4) {
+    formatted = cleaned.slice(0, 2) + '-' + cleaned.slice(2);
+  } else if (cleaned.length > 4) {
+    formatted =
+      cleaned.slice(0, 2) +
+      '-' +
+      cleaned.slice(2, 4) +
+      '-' +
+      cleaned.slice(4, 8);
+  }
+
+  updateField(index, 'expiration_date', formatted);
+};
   const getStoragePlaceId = async () => {
   const token = await AsyncStorage.getItem('token');
 
@@ -70,14 +99,23 @@ const handleSaveAll = async () => {
     const token = await AsyncStorage.getItem('token');
     const storagePlaceId = await getStoragePlaceId();
 
-    const payload = items.map((item) => ({
-      Name: item.name,
-      Quantity: Number(item.quantity),
-      Unit: item.unit,
-      Expiration_Date: item.expiration_date,
-      Storage_Place_Id: storagePlaceId,
-      Comment: item.comment || "",
-    }));
+    const payload = items.map((item) => {
+  let isoDate = null;
+
+  if (item.expiration_date) {
+    const [day, month, year] = item.expiration_date.split('-');
+    isoDate = `${year}-${month}-${day}`;
+  }
+
+  return {
+    Name: item.name,
+    Quantity: Number(item.quantity),
+    Unit: item.unit,
+    Expiration_Date: isoDate,
+    Storage_Place_Id: storagePlaceId,
+    Comment: item.comment || "",
+  };
+});
 
     const response = await fetch(
       'https://myfridgebackend.onrender.com/api/products/batch',
@@ -120,18 +158,17 @@ const handleSaveAll = async () => {
       .slice(-items.length);
 
     // 🔥 Зберігаємо категорії локально
-    for (let i = 0; i < lastCreated.length; i++) {
-      const selectedCat = CATEGORIES.find(
-        c => c.id === items[i].categoryId
-      );
+    const stored = await AsyncStorage.getItem("productCategories");
+let categoriesMap = stored ? JSON.parse(stored) : {};
 
-      if (selectedCat) {
-        await AsyncStorage.setItem(
-          `category_${lastCreated[i].id}`,
-          JSON.stringify(selectedCat)
-        );
-      }
-    }
+for (let i = 0; i < lastCreated.length; i++) {
+  categoriesMap[lastCreated[i].id] = items[i].categoryId;
+}
+
+await AsyncStorage.setItem(
+  "productCategories",
+  JSON.stringify(categoriesMap)
+);
 
     router.replace('/(tabs)');
 
@@ -165,7 +202,7 @@ const handleSaveAll = async () => {
             setActiveUnitIndex(activeUnitIndex === index ? null : index)
           }
         >
-          <Text>{item.unit}</Text>
+          <Text>{UNIT_LABELS[item.unit] || item.unit}</Text>
         </TouchableOpacity>
       </View>
 
@@ -180,7 +217,7 @@ const handleSaveAll = async () => {
               }}
               style={dropdownItemStyle}
             >
-              <Text>{unit}</Text>
+              <Text>{UNIT_LABELS[unit]}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -203,7 +240,18 @@ const handleSaveAll = async () => {
           }
         </Text>
       </TouchableOpacity>
+<Text style={{ marginBottom: 5 }}>
+  Термін придатності
+</Text>
 
+<TextInput
+  value={item.expiration_date}
+  onChangeText={(text) => formatDateInput(index, text)}
+  placeholder="ДД-ММ-РРРР"
+  keyboardType="numeric"
+  maxLength={10}
+  style={inputStyle}
+/>
       <TextInput
         value={item.comment}
         onChangeText={(text) => updateField(index, 'comment', text)}
@@ -216,7 +264,7 @@ const handleSaveAll = async () => {
 
   return (
     <View style={containerStyle}>
-      <Text style={headerStyle}>Перевірте продукти</Text>
+      <Text style={headerStyle}>Перевірте продукти та за потреби відредагуйте</Text>
 
       <FlatList
         data={items}

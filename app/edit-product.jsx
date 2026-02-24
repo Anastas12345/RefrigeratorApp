@@ -33,6 +33,13 @@ export default function EditProduct() {
   const [errors, setErrors] = useState({});
 
   const UNITS = ['pcs', 'kg', 'g', 'l', 'ml'];
+  const UNIT_LABELS = {
+  pcs: 'шт',
+  kg: 'кг',
+  g: 'г',
+  l: 'л',
+  ml: 'мл',
+};
 
   useEffect(() => {
     if (!id) return;
@@ -260,7 +267,7 @@ export default function EditProduct() {
                   onPress={() => setShowUnits(!showUnits)}
                   style={[inputStyle, { justifyContent: 'center' }]}
                 >
-                  <Text>{unit}</Text>
+                  <Text>{UNIT_LABELS[unit] || unit}</Text>
                 </TouchableOpacity>
 
                 {showUnits && (
@@ -284,7 +291,7 @@ export default function EditProduct() {
                         }}
                         style={{ padding: 12 }}
                       >
-                        <Text>{item}</Text>
+                        <Text>{UNIT_LABELS[item]}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>

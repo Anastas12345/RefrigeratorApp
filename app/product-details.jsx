@@ -12,6 +12,13 @@ import {
 import { CATEGORIES } from "../constants/categories";
 
 const API_URL = "https://myfridgebackend.onrender.com/api/products";
+const UNIT_LABELS = {
+  pcs: 'шт',
+  kg: 'кг',
+  g: 'г',
+  l: 'л',
+  ml: 'мл',
+};
 
 export default function ProductDetails() {
   const { id } = useLocalSearchParams();
@@ -188,8 +195,8 @@ export default function ProductDetails() {
 
         <Text>Кількість</Text>
         <Text style={{ marginBottom: 20 }}>
-          {product.quantity} {product.unit}
-        </Text>
+  {product.quantity} {UNIT_LABELS[product.unit] || product.unit}
+</Text>
 
         <Text>Термін придатності</Text>
         <Text
@@ -266,36 +273,44 @@ export default function ProductDetails() {
 
       {/* 🔥 МОДАЛЬНЕ ВІКНО */}
       {deleteModalVisible && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              Вам було смачно?
-            </Text>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalCard}>
+      <Text style={styles.modalTitle}>
+        Вам було смачно?
+      </Text>
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalYes}
-                onPress={deleteProduct}
-              >
-                <Text style={styles.modalText}>
-                  Так
-                </Text>
-              </TouchableOpacity>
+      <View style={styles.modalButtons}>
+        <TouchableOpacity
+          style={styles.modalYes}
+          onPress={deleteProduct}
+        >
+          <Text style={styles.modalText}>
+            Так
+          </Text>
+        </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.modalNo}
-                onPress={() =>
-                  setDeleteModalVisible(false)
-                }
-              >
-                <Text style={styles.modalText}>
-                  Ні
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+        <TouchableOpacity
+          style={styles.modalNo}
+          onPress={() =>
+            setDeleteModalVisible(false)
+          }
+        >
+          <Text style={styles.modalText}>
+            Ні
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 👇 Ось тут має бути підказка */}
+      <Text style={styles.modalHint}>
+        "Так" — продукт буде видалено.
+        {"\n"}
+        "Ні" — продукт залишиться у списку.
+      </Text>
+
+    </View>
+  </View>
+)}
     </View>
   );
 }
@@ -310,10 +325,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
+    
   },
 
   modalCard: {
-    backgroundColor: "#F4B000",
+    backgroundColor: "#f1c555",
     width: "80%",
     padding: 25,
     borderRadius: 30,
@@ -345,7 +361,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 20,
   },
-
+modalHint: {
+  marginTop: 15,
+  fontSize: 12,
+  color: "#555",
+  textAlign: "center",
+  lineHeight: 18,
+},
   modalText: {
     color: "#fff",
     fontWeight: "700",
