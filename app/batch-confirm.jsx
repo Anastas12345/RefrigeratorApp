@@ -45,6 +45,13 @@ export default function BatchConfirm() {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(null);
 
   const UNITS = ['pcs', 'kg', 'g', 'l', 'ml'];
+  const UNIT_LABELS = {
+  pcs: 'шт',
+  kg: 'кг',
+  g: 'г',
+  l: 'л',
+  ml: 'мл',
+};
 
   const updateField = (index, field, value) => {
     const updated = [...items];
@@ -195,7 +202,7 @@ await AsyncStorage.setItem(
             setActiveUnitIndex(activeUnitIndex === index ? null : index)
           }
         >
-          <Text>{item.unit}</Text>
+          <Text>{UNIT_LABELS[item.unit] || item.unit}</Text>
         </TouchableOpacity>
       </View>
 
@@ -210,7 +217,7 @@ await AsyncStorage.setItem(
               }}
               style={dropdownItemStyle}
             >
-              <Text>{unit}</Text>
+              <Text>{UNIT_LABELS[unit]}</Text>
             </TouchableOpacity>
           ))}
         </View>

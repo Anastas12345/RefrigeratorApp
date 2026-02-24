@@ -1,5 +1,12 @@
 import { View, Text } from 'react-native';
 import { calculateProgress, getProgressColor } from "../constants/utils/dateProgress";
+const UNIT_LABELS = {
+  pcs: "шт",
+  kg: "кг",
+  g: "г",
+  l: "л",
+  ml: "мл",
+};
 
 export default function ProductCard({ product }) {
 
@@ -50,7 +57,7 @@ export default function ProductCard({ product }) {
         </Text>
 
         <Text style={{ fontSize: 14 }}>
-          {product.quantity} {product.unit}
+          {product.quantity} {UNIT_LABELS[product.unit] || product.unit}
         </Text>
       </View>
 
