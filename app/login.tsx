@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   SafeAreaView,
   View,
@@ -12,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
@@ -27,7 +26,9 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -36,44 +37,41 @@ export default function LoginScreen() {
   const validate = () => {
     const e: { email?: string; password?: string } = {};
 
-    if (!email.trim()) {
-      e.email = "Потрібно ввести пошту";
-    }
+    if (!email.trim()) e.email = "Потрібно ввести пошту";
 
-    if (!password.trim()) {
-      e.password = "Потрібно ввести пароль";
-    } else if (password.length < 6) {
+    if (!password.trim()) e.password = "Потрібно ввести пароль";
+    else if (password.length < 6)
       e.password = "Пароль має містити не менше 6 символів";
-    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const onLogin = async () => {
-  if (!validate()) return;
+    if (!validate()) return;
 
-  try {
-    setServerError(null);
-    setLoading(true);
+    try {
+      setServerError(null);
+      setLoading(true);
 
-    // 🔥 отримуємо токен
-    const token = await apiLogin(email.trim(), password);
+      const cleanEmail = email.trim().toLowerCase();
 
-    console.log("NEW TOKEN:", token);
+      // отримуємо токен з бекенда
+      const token = await apiLogin(cleanEmail, password);
 
-    // 🔥 примусово перезаписуємо токен
-    await AsyncStorage.setItem("token", token);
-    await saveProfileEmail(email);
-    
-    router.replace("/(tabs)");
-  } catch (e: any) {
-    setServerError(e?.message ?? "Помилка входу");
-  } finally {
-    setLoading(false);
-  }
-};
+      // зберігаємо токен (у тебе в проекті використовується ключ "token")
+      await AsyncStorage.setItem("token", token);
 
+      // ✅ зберігаємо email поточного користувача локально
+      await saveProfileEmail(cleanEmail);
+
+      router.replace("/(tabs)");
+    } catch (e: any) {
+      setServerError(e?.message ?? "Помилка входу");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onChangeEmail = (v: string) => {
     setEmail(v);
@@ -88,95 +86,107 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <View style={styles.headerBlob} />
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
 
-        <KeyboardAvoidingView
-          style={{ flex: 1, width: "100%" }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.content}>
-            <Text
-              style={styles.titleBig}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.8}
-            >
-              АВТОРИЗАЦІЯ
-            </Text>
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.container}>
+          <View style={styles.headerBlob} />
 
-            <View style={styles.card}>
-              <Text style={styles.label}>Пошта</Text>
-              <TextInput
-                value={email}
-                onChangeText={onChangeEmail}
-                placeholder="Введіть пошту"
-                placeholderTextColor="#9AA7B2"
-                style={[styles.input, errors.email && styles.inputError]}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              {!!errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
-              <Text style={[styles.label, { marginTop: 12 }]}>Пароль</Text>
-
-              <View style={styles.passwordWrap}>
-                <TextInput
-                  value={password}
-                  onChangeText={onChangePassword}
-                  placeholder="Введіть пароль"
-                  placeholderTextColor="#9AA7B2"
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.password && styles.inputError,
-                  ]}
-                  secureTextEntry={!showPassword}
-                />
-
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeButton}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={22}
-                    color="#7B8794"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {!!errors.password && (<Text style={styles.errorText}>{errors.password}</Text>
-              )}
-
-              {/* Помилка від бекенда */}
-              {!!serverError && <Text style={styles.errorText}>{serverError}</Text>}
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.button,
-                  pressed && styles.buttonPressed,
-                  loading && { opacity: 0.7 },
-                ]}
-                onPress={onLogin}
-                disabled={loading}
+          <KeyboardAvoidingView
+            style={{ flex: 1, width: "100%" }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <View style={styles.content}>
+              <Text
+                style={styles.titleBig}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
               >
-                <Text style={styles.buttonText}>
-                  {loading ? "Зачекайте..." : "Увійти"}
-                </Text>
-              </Pressable>
+                АВТОРИЗАЦІЯ
+              </Text>
 
-              <Pressable style={styles.linkWrap} onPress={() => router.push("/register")}>
-                <Text style={styles.linkText}>
-                  Немає акаунта? <Text style={styles.linkTextBold}>Реєстрація</Text>
-                </Text>
-              </Pressable>
+              <View style={styles.card}>
+                <Text style={styles.label}>Пошта</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={onChangeEmail}
+                  placeholder="Введіть пошту"
+                  placeholderTextColor="#9AA7B2"
+                  style={[styles.input, errors.email && styles.inputError]}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                {!!errors.email && (
+                  <Text style={styles.errorText}>{errors.email}</Text>
+                )}
+
+                <Text style={[styles.label, { marginTop: 12 }]}>Пароль</Text>
+
+                <View style={styles.passwordWrap}>
+                  <TextInput
+                    value={password}
+                    onChangeText={onChangePassword}
+                    placeholder="Введіть пароль"
+                    placeholderTextColor="#9AA7B2"
+                    style={[
+                      styles.input,
+                      styles.passwordInput,
+                      errors.password && styles.inputError,
+                    ]}
+                    secureTextEntry={!showPassword}
+                  />
+
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeButton}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={22}
+                      color="#7B8794"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {!!errors.password && (
+                  <Text style={styles.errorText}>{errors.password}</Text>
+                )}
+
+                {!!serverError && (
+                  <Text style={styles.errorText}>{serverError}</Text>
+                )}
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.button,
+                    pressed && styles.buttonPressed,
+                    loading && { opacity: 0.7 },
+                  ]}
+                  onPress={onLogin}
+                  disabled={loading}
+                >
+                  <Text style={styles.buttonText}>
+                    {loading ? "Зачекайте..." : "Увійти"}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={styles.linkWrap}
+                  onPress={() => router.push("/register")}
+                >
+                  <Text style={styles.linkText}>
+                    Немає акаунта?{" "}
+                    <Text style={styles.linkTextBold}>Реєстрація</Text>
+                  </Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </View>
-    </SafeAreaView>
+          </KeyboardAvoidingView>
+        </View>
+      </SafeAreaView>
+    </>
   );
 }
 
@@ -201,7 +211,12 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: width,
   },
 
-  content: { flex: 1, alignItems: "center", paddingHorizontal: 22, paddingTop: 28 },
+  content: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 22,
+    paddingTop: 28,
+  },
 
   titleBig: {
     fontSize: 28,
@@ -240,24 +255,11 @@ const styles = StyleSheet.create({
   },
   inputError: { borderColor: ERROR },
 
-  errorText: {
-    marginTop: 6,
-    color: ERROR,
-    fontSize: 12,
-    fontWeight: "700",
-  },
+  errorText: { marginTop: 6, color: ERROR, fontSize: 12, fontWeight: "700" },
 
-  passwordWrap: {
-    position: "relative",
-    justifyContent: "center",
-  },
+  passwordWrap: { position: "relative", justifyContent: "center" },
   passwordInput: { paddingRight: 46 },
-  eyeButton: {
-    position: "absolute",
-    right: 14,
-    height: "100%",
-    justifyContent: "center",
-  },
+  eyeButton: { position: "absolute", right: 14, height: "100%", justifyContent: "center" },
 
   button: {
     marginTop: 18,

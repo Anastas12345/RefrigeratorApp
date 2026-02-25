@@ -10,13 +10,14 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
-import { register as apiRegister, login as apiLogin } from "@/src/api/authApi";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { Stack } from "expo-router";
+import { register as apiRegister, login as apiLogin } from "@/src/api/authApi";
+import { saveProfileEmail, clearProfileName } from "@/src/storage/profile";
 
 const { width } = Dimensions.get("window");
 
@@ -45,25 +46,17 @@ export default function RegisterScreen() {
   };
 
   const validate = () => {
-    const e: {
-      email?: string;
-      password?: string;
-      repeatPassword?: string;
-    } = {};
+    const e: { email?: string; password?: string; repeatPassword?: string } = {};
 
-    if (!email.trim()) e.email = "Потрібно ввести пошту";
+    const em = email.trim().toLowerCase();
 
-    if (!password.trim()) {
-      e.password = "Потрібно ввести пароль";
-    } else if (password.length < 6) {
-      e.password = "Пароль має містити не менше 6 символів";
-    }
+    if (!em) e.email = "Потрібно ввести пошту";
 
-    if (!repeatPassword.trim()) {
-      e.repeatPassword = "Потрібно повторити пароль";
-    } else if (repeatPassword !== password) {
-      e.repeatPassword = "Паролі не співпадають";
-    }
+    if (!password.trim()) e.password = "Потрібно ввести пароль";
+    else if (password.length < 6) e.password = "Пароль має містити не менше 6 символів";
+
+    if (!repeatPassword.trim()) e.repeatPassword = "Потрібно повторити пароль";
+    else if (repeatPassword !== password) e.repeatPassword = "Паролі не співпадають";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -76,13 +69,22 @@ export default function RegisterScreen() {
       setServerError(null);
       setLoading(true);
 
-      // 1) пробуємо реєстрацію
-      const token = await apiRegister(email.trim(), password);
+      const em = email.trim().toLowerCase();
 
-      // 2) якщо register НЕ повернув токен — робимо авто-логін (щоб одразу зайти)
-      if (!token) {
-        await apiLogin(email.trim(), password);
-      }
+      // 1) register
+      const registerToken = await apiRegister(em, password);
+
+      // 2) гарантуємо токен (або з реєстрації, або робимо автологін)
+      const token = registerToken ? registerToken : await apiLogin(em, password);
+
+      // 3) зберігаємо ТОЧНО в ті ключі, які ти використовуєш в проекті
+      await AsyncStorage.setItem("token", token);
+
+      // 4) зберігаємо email для ProfileScreen (локально)
+      await saveProfileEmail(em);
+
+      // (опціонально) щоб ім’я не “прилипало” від попереднього користувача
+      await clearProfileName();
 
       router.replace("/(tabs)");
     } catch (e: any) {
@@ -93,9 +95,9 @@ export default function RegisterScreen() {
   };
 
   return (
-    
     <SafeAreaView style={styles.safe}>
       <Stack.Screen options={{ headerShown: false }} />
+
       <View style={styles.container}>
         <View style={styles.headerBlob} />
 
@@ -104,12 +106,7 @@ export default function RegisterScreen() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.content}>
-            <Text
-              style={styles.titleBig}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.8}
-            >
+            <Text style={styles.titleBig} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
               РЕЄСТРАЦІЯ
             </Text>
 
@@ -128,9 +125,7 @@ export default function RegisterScreen() {
                 autoCapitalize="none"
                 keyboardType="email-address"
               />
-              {!!errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
-              {/* PASSWORD + EYE */}
+              {!!errors.email && <Text style={styles.errorText}>{errors.email}</Text>}{/* PASSWORD + EYE */}
               <Text style={[styles.label, { marginTop: 12 }]}>Пароль</Text>
               <View style={styles.passwordWrap}>
                 <TextInput
@@ -140,22 +135,12 @@ export default function RegisterScreen() {
                     clearError("password");
                   }}
                   placeholder="Введіть пароль"
-                  placeholderTextColor="#9AA7B2"style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.password && styles.inputError,
-                  ]}
+                  placeholderTextColor="#9AA7B2"
+                  style={[styles.input, styles.passwordInput, errors.password && styles.inputError]}
                   secureTextEntry={!showPassword}
                 />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeButton}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={22}
-                    color="#7B8794"
-                  />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color="#7B8794" />
                 </TouchableOpacity>
               </View>
               {!!errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
@@ -171,11 +156,7 @@ export default function RegisterScreen() {
                   }}
                   placeholder="Повторіть пароль"
                   placeholderTextColor="#9AA7B2"
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.repeatPassword && styles.inputError,
-                  ]}
+                  style={[styles.input, styles.passwordInput, errors.repeatPassword && styles.inputError]}
                   secureTextEntry={!showRepeatPassword}
                 />
                 <TouchableOpacity
@@ -189,9 +170,7 @@ export default function RegisterScreen() {
                   />
                 </TouchableOpacity>
               </View>
-              {!!errors.repeatPassword && (
-                <Text style={styles.errorText}>{errors.repeatPassword}</Text>
-              )}
+              {!!errors.repeatPassword && <Text style={styles.errorText}>{errors.repeatPassword}</Text>}
 
               {/* SERVER ERROR */}
               {!!serverError && <Text style={styles.errorText}>{serverError}</Text>}
@@ -206,9 +185,7 @@ export default function RegisterScreen() {
                 onPress={onRegister}
                 disabled={loading}
               >
-                <Text style={styles.buttonText}>
-                  {loading ? "Зачекайте..." : "Зареєструватися"}
-                </Text>
+                <Text style={styles.buttonText}>{loading ? "Зачекайте..." : "Зареєструватися"}</Text>
               </Pressable>
 
               {/* LINK TO LOGIN */}
@@ -237,7 +214,7 @@ const styles = StyleSheet.create({
 
   headerBlob: {
     position: "absolute",
-    top: -width * 0.22, // як у логіні (щоб не з'їжджав дизайн)
+    top: -width * 0.22,
     left: -width * 0.2,
     width: width * 1.4,
     height: width * 1.05,
@@ -262,9 +239,9 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 22,
     backgroundColor: "#FFFFFF",
-    borderRadius: 22,
-    padding: 18,
-    shadowColor: "#000",shadowOpacity: 0.08,
+    borderRadius: 22,padding: 18,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
