@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
 
+import { Stack } from "expo-router";
 export default function BatchConfirm() {
   const params = useLocalSearchParams();
 
@@ -264,6 +265,7 @@ await AsyncStorage.setItem(
 
   return (
     <View style={containerStyle}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Text style={headerStyle}>Перевірте продукти та за потреби відредагуйте</Text>
 
       <FlatList

@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CATEGORIES } from "../constants/categories";
 
+import { Stack } from "expo-router";
 const AI_URL = "https://myfridgebackend.onrender.com/api/Recipe/generate";
 const PRODUCTS_URL = "https://myfridgebackend.onrender.com/api/products";
 
@@ -131,6 +132,7 @@ export default function AiHelper() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <FlatList
         data={filteredProducts}
         numColumns={2}

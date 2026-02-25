@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
 
-
+import { Stack } from "expo-router";
 export default function AddProduct() {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -174,6 +174,7 @@ console.log(
       style={{ flex: 1 }}
       onPress={() => setShowUnits(false)}
     >
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView style={{ flex: 1, backgroundColor: '#CFE8F1' }}>
         {/* Верхня дуга */}
         <View

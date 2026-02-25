@@ -10,6 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import ProductCard from "../components/ProductCard";
 
+import { Stack } from "expo-router";
 const API_URL =
   "https://myfridgebackend.onrender.com/api/products?expirationCategory=soon";
 
@@ -51,6 +52,7 @@ export default function ExpiringProducts() {
 
   return (
     <View style={{ flex: 1, padding: 20, backgroundColor: "#EAF6FA" }}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Text
         style={{
           fontSize: 24,
@@ -76,7 +78,7 @@ export default function ExpiringProducts() {
                 router.push(`/product-details?id=${item.id}`)
               }
             >
-              <ProductCard product={item} />
+              <ProductCard product={item} onToggleFavorite={undefined} isLoadingFavorite={undefined} />
             </TouchableOpacity>
           )}
         />
