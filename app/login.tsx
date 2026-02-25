@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
 import { login as apiLogin } from "@/src/api/authApi";
+import { saveProfileEmail } from "@/src/storage/profile";
 
 const { width } = Dimensions.get("window");
 
@@ -63,7 +64,8 @@ export default function LoginScreen() {
 
     // 🔥 примусово перезаписуємо токен
     await AsyncStorage.setItem("token", token);
-
+    await saveProfileEmail(email);
+    
     router.replace("/(tabs)");
   } catch (e: any) {
     setServerError(e?.message ?? "Помилка входу");
