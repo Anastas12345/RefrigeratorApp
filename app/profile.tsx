@@ -22,9 +22,10 @@ import {
   clearProfileName,
   getProfileEmail,
   getProfileName,
+  saveProfileEmail,
   saveProfileName,
 } from "@/src/storage/profile";
-import { removeToken } from "@/src/storage/token";
+import { getToken, removeToken } from "@/src/storage/token";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -50,10 +51,19 @@ export default function ProfileScreen() {
         setLoadingLocal(true);
         setError(null);
 
-        const e = await getProfileEmail();
+        const token = await getToken();
+
+const response = await fetch("https://myfridgebackend.onrender.com/api/users/me", {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+const profile = await response.json();
+
+setEmail(profile.email);
+await saveProfileEmail(profile.email); // оновлюємо storage
         const n = await getProfileName();
 
-        setEmail(e ?? "");
+        setEmail(profile.email ?? "");
         setSavedName(n ?? "");
         setNameDraft(n ?? "");
       } catch (e: any) {
@@ -100,6 +110,8 @@ export default function ProfileScreen() {
 
   const onLogout = async () => {
     await removeToken();
+    await clearProfileEmail();
+    await clearProfileName();
     router.replace("/login");
   };
 

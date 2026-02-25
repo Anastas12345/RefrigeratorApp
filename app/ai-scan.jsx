@@ -9,6 +9,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { Stack } from "expo-router";
 const CATEGORY_MAP = {
   Dairy: 1,
   Meat: 2,
@@ -113,6 +114,7 @@ export default function AiScan() {
 
   return (
     <View style={{ flex: 1 }}>
+      <Stack.Screen options={{ headerShown: false }} />
       {!isProcessing ? (
         <>
           <CameraView

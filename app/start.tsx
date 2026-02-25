@@ -3,6 +3,8 @@ import { ActivityIndicator, View } from "react-native";
 import { useRouter } from "expo-router";
 import { getLoggedIn } from "@/src/storage/session";
 
+import { Stack } from "expo-router";
+
 export default function Start() {
   const router = useRouter();
 
@@ -15,6 +17,7 @@ export default function Start() {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#EAF7FF" }}>
+      <Stack.Screen options={{ headerShown: false }} />
       <ActivityIndicator size="large" />
     </View>
   );

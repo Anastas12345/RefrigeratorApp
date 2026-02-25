@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
+import { Stack } from "expo-router";
 
 const API_URL = 'https://myfridgebackend.onrender.com/api/products';
 const STORAGE_API =
@@ -216,6 +217,7 @@ export default function EditProduct() {
       style={{ flex: 1 }}
       onPress={() => setShowUnits(false)}
     >
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView style={{ flex: 1, backgroundColor: '#CFE8F1' }}>
 
         {/* Верхня дуга */}

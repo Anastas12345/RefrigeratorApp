@@ -16,6 +16,8 @@ import { TouchableOpacity } from "react-native";
 
 import { register as apiRegister, login as apiLogin } from "@/src/api/authApi";
 
+import { Stack } from "expo-router";
+
 const { width } = Dimensions.get("window");
 
 export default function RegisterScreen() {
@@ -91,7 +93,9 @@ export default function RegisterScreen() {
   };
 
   return (
+    
     <SafeAreaView style={styles.safe}>
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
         <View style={styles.headerBlob} />
 

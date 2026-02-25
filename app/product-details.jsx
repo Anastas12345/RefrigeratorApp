@@ -10,6 +10,8 @@ import {
   View,
 } from "react-native";
 import { CATEGORIES } from "../constants/categories";
+import { Stack } from 'expo-router';
+
 
 const API_URL = "https://myfridgebackend.onrender.com/api/products";
 const UNIT_LABELS = {
@@ -114,6 +116,19 @@ export default function ProductDetails() {
     : "—";
 
   return (
+  <>
+    <Stack.Screen
+  options={{
+    headerTransparent: true,
+    headerTitle: '',
+    headerShadowVisible: false,
+    headerBackVisible: false,
+    headerStyle: {
+      backgroundColor: 'transparent',
+    },
+  }}
+/>
+
     <View style={{ flex: 1, backgroundColor: "#CFE8F1" }}>
       <View
         style={{
@@ -143,6 +158,7 @@ export default function ProductDetails() {
           <Text style={{ fontSize: 18, fontWeight: "600" }}>
             {product.name}
           </Text>
+
 
           <Text style={{ marginTop: 15 }}>
             Місце зберігання
@@ -308,11 +324,13 @@ export default function ProductDetails() {
         "Ні" — продукт залишиться у списку.
       </Text>
 
+
     </View>
   </View>
 )}
-    </View>
-  );
+        </View>
+  </>
+);
 }
 
 const styles = StyleSheet.create({
