@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Foodio",
-    "slug": "Foodio",
+    "slug": "RefrigeratorApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon_ios.jpg",
@@ -55,6 +55,7 @@
       "eas": {
         "projectId": "769ed9bf-330b-433b-8afe-5da80bed6a89"
       }
-    }
+    },
+    "owner": "nastia1234456"
   }
 }
