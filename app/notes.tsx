@@ -190,6 +190,9 @@ export default function NotesScreen() {
   );
 
   return (
+    <KeyboardAvoidingView
+    style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"} >
     <SafeAreaView style={styles.safe}>
       <Stack.Screen options={{ headerShown: false }} />
 
@@ -317,6 +320,7 @@ export default function NotesScreen() {
         </View>
       </TouchableWithoutFeedback>
     </SafeAreaView>
+</KeyboardAvoidingView>    
   );
 }
 
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
   // ✅ опущене нижче, щоб ПЕРЕКРИВАЛО заголовок + підзаголовок
   headerBlob: {
     position: "absolute",
-    top: -70, // 👈 опусти ще нижче: -50 / -40 якщо треба
+    top: -100, // 👈 опусти ще нижче: -50 / -40 якщо треба
     left: -120,
     right: -120,
     height: 260,
@@ -376,6 +380,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: ORANGE,
     letterSpacing: 0.5,
+    top: 7,
   },
 
   subtitle: {

@@ -171,6 +171,9 @@ console.log(
 
 
   return (
+    <KeyboardAvoidingView
+    style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"} >
   <Pressable style={{ flex: 1 }} onPress={() => setShowUnits(false)}>
     <Stack.Screen options={{ headerShown: false }} />
 
@@ -250,7 +253,7 @@ console.log(
             top: 46,
             right: 0,
             width: 120,
-            maxHeight: 150,
+            maxHeight: 240,
             backgroundColor: "#FFFFFF",
             borderRadius: 14,
             borderWidth: 1,
@@ -471,6 +474,7 @@ console.log(
       </View>
     </ScrollView>
   </Pressable>
+  </KeyboardAvoidingView>
 );
 }
 /* ===== СТИЛІ ===== */

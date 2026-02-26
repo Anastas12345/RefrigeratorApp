@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
 
   headerBlob: {
     position: "absolute",
-    top: -130,
+    top: -75,
     left: -80,
     right: -80,
     height: 240,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "900",
     color: ORANGE,
-    marginTop: 4,
+    marginTop: 7,
   },
   subtitle: {
     textAlign: "center",

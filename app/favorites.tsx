@@ -134,10 +134,10 @@ const styles = StyleSheet.create({
 
   headerBlob: {
     position: "absolute",
-    top: -120,
+    top: -100,
     left: -120,
     right: -120,
-    height: 280,
+    height: 250,
     backgroundColor: HEADER_BG,
     borderBottomLeftRadius: 260,
     borderBottomRightRadius: 260,
@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: ORANGE,
     letterSpacing: 0.4,
+    top: 7,
   },
   subtitle: {
     marginTop: 4,
