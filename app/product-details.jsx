@@ -50,24 +50,20 @@ export default function ProductDetails() {
       const data = await response.json();
       setProduct(data);
 
-      // 🔥 Категорія з AsyncStorage (як у тебе), але без проблем з типами id
+      // 🔥 Читаємо категорію з productCategories
       const stored = await AsyncStorage.getItem("productCategories");
+
       if (stored) {
         const categoriesMap = JSON.parse(stored);
+        const categoryId = categoriesMap[data.id];
 
-        // JSON keys = string, тому приводимо ключ до string
-        const productKey = String(data.id ?? data._id ?? id);
-
-        const categoryId =
-          categoriesMap[productKey] ??
-          categoriesMap[data.id] ??
-          categoriesMap[String(data.id)];
-
-        if (categoryId != null) {
+        if (categoryId) {
           const categoryObj = CATEGORIES.find(
-            (cat) => String(cat.id) === String(categoryId)
+            (cat) => cat.id === categoryId
           );
-          if (categoryObj) setCategory(categoryObj);
+          if (categoryObj) {
+            setCategory(categoryObj);
+          }
         }
       }
     } catch (err) {
@@ -157,7 +153,46 @@ export default function ProductDetails() {
                 {product.quantity} {UNIT_LABELS[product.unit] || product.unit}
               </Text>
             </View>
+{category ? (
+  <View
+    style={{
+      backgroundColor: "#fff",
+      padding: 16,
+      borderRadius: 22,
+      marginBottom: 16,
+      shadowColor: "#000",
+      shadowOpacity: 0.06,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 3,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    }}
+  >
+    <View
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: category.color,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <MaterialCommunityIcons name={category.icon} size={22} color="#fff" />
+    </View>
 
+    <View style={{ flex: 1 }}>
+      <Text style={{ color: "#64748B", fontSize: 12, fontWeight: "600" }}>
+        Категорія
+      </Text>
+      <Text style={{ color: "#0F172A", fontSize: 16, fontWeight: "800" }}>
+        {category.name}
+      </Text>
+    </View>
+  </View>
+) : null}
             <Text style={[styles.cardTitle, { marginTop: 16 }]}>
               Термін придатності
             </Text>

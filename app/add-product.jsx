@@ -9,6 +9,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { CATEGORIES } from '../constants/categories';
 import { Ionicons } from "@expo/vector-icons";
