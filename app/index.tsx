@@ -26,7 +26,7 @@ export default function WelcomeScreen() {
           <Text style={styles.titleSmall}>ЩО В</Text>
 
           <Text style={styles.titleBig} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-            ХОЛОДИЛЬНИКУ
+            FOODIO
           </Text>
 
           {/* холодильники */}
@@ -59,9 +59,10 @@ export default function WelcomeScreen() {
 
           {/* опис */}
           <Text style={styles.description}>
-            Контролюй свої продукти легко.{"\n"}
-            Додавай продукти, слідкуй за терміном{"\n"}
-            придатності та зменшуй харчові втрати.
+            Усередині - більше, ніж продукти.{"\n"}
+            Фото, контроль термінів, розумні {"\n"}
+            підказки та рецепти від АІ.{"\n"}
+            Натхнення починається тут!
           </Text>
 
           {/* кнопка */}
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
 
   // як на рефі: великий, але в 1 рядок
   titleBig: {
-    fontSize: 35,
+    fontSize: 45,
     fontWeight: "900",
     color: ORANGE,
     letterSpacing: 1,

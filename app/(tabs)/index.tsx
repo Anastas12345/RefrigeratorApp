@@ -263,15 +263,15 @@ console.log("SHOW AI HINT:", showAiHint);
         paddingHorizontal: 20,
         paddingBottom: 20,
         paddingTop: 70,
-        backgroundColor: '#EAF6FA'
+        backgroundColor: '#EAF7FF'
       }}
     >
       {/* Заголовок */}
       <Text
         style={{
           fontSize: 28,
-          fontWeight: '700',
-          marginBottom: 10,
+          fontWeight: '800',
+          marginBottom: 7,
           textAlign: 'center',
         }}
       >
@@ -373,60 +373,93 @@ console.log("SHOW AI HINT:", showAiHint);
           <TouchableOpacity
             key={item}
             onPress={() => setActiveTab(item)}
-          >
+          activeOpacity={0.8}
+  style={{
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 18,
+    backgroundColor:
+      activeTab === item
+        ? 'rgba(255,122,0,0.12)'
+        : 'transparent',
+  }}
+>
             <Text
-              style={{
-                fontSize: 14,
-                color: activeTab === item ? '#FF7A00' : '#999',
-                fontWeight: activeTab === item ? '600' : '400',
-              }}
-            >
-              {item}
-            </Text>
+    style={{
+      fontSize: 14,
+      color: activeTab === item ? '#FF7A00' : '#8E8E93',
+      fontWeight: activeTab === item ? '700' : '500',
+    }}
+  >
+    {item}
+  </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Пошук + фільтри */}
-      <View
-        style={{
-          flexDirection: 'row',
-          marginBottom: 15,
-        }}
-      >
-        <TextInput
-          placeholder="Пошук продукту…"
-          value={searchText}
-          onChangeText={setSearchText}
-          style={{
-            flex: 1,
-            backgroundColor: '#fff',
-            padding: 10,
-            borderRadius: 10,
-            marginRight: 10,
-          }}
-        /><TouchableOpacity
-          onPress={() => {
-            if (filterType === null) setFilterType('favorites');
-            else if (filterType === 'favorites') setFilterType('dateAsc');
-            else if (filterType === 'dateAsc') setFilterType('dateDesc');
-            else setFilterType(null);
-          }}
-          style={{
-            backgroundColor: '#fff',
-            padding: 10,
-            borderRadius: 10,
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={{ color: '#999' }}>
-            {filterType === null && 'Фільтри'}
-            {filterType === 'favorites' && '❤️ Улюблені'}
-            {filterType === 'dateAsc' && 'Найближчі'}
-            {filterType === 'dateDesc' && 'Найпізніші'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Пошук + фільтри (modern) */}
+<View
+  style={{
+    marginHorizontal: 1,
+    marginBottom: 14,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.04)",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  }}
+>
+  <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
+    <TextInput
+      placeholder="Пошук продукту…"
+      placeholderTextColor="#9AA3AF"
+      value={searchText}
+      onChangeText={setSearchText}
+      style={{
+        flex: 1,
+        height: 44,
+        borderRadius: 16,
+        backgroundColor: "rgba(234,246,250,0.9)",
+        paddingHorizontal: 15,
+        fontSize: 16,
+        color: "#111827",
+      }}
+    />
+
+    <TouchableOpacity
+      onPress={() => {
+        if (filterType === null) setFilterType("favorites");
+        else if (filterType === "favorites") setFilterType("dateAsc");
+        else if (filterType === "dateAsc") setFilterType("dateDesc");
+        else setFilterType(null);
+      }}
+      activeOpacity={0.85}
+      style={{
+        height: 44,
+        paddingHorizontal: 15,
+        borderRadius: 16,
+        justifyContent: "center",
+        backgroundColor: "rgba(255,122,0,0.14)",
+        borderWidth: 1,
+        borderColor: "rgba(255,122,0,0.22)",
+      }}
+    >
+      <Text style={{ color: "#FF7A00", fontWeight: "800" }}>
+        {filterType === null && "Фільтри"}
+        {filterType === "favorites" && "❤️ Улюблені"}
+        {filterType === "dateAsc" && "Найближчі"}
+        {filterType === "dateDesc" && "Найпізніші"}
+      </Text>
+    </TouchableOpacity>
+  </View>
+</View>
+
+
 
       {/* Список продуктів */}
       <FlatList

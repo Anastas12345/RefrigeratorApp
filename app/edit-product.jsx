@@ -213,76 +213,64 @@ export default function EditProduct() {
   };
 
   return (
-    <Pressable
-      style={{ flex: 1 }}
-      onPress={() => setShowUnits(false)}
-    >
-      <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView style={{ flex: 1, backgroundColor: '#CFE8F1' }}>
+  <Pressable style={{ flex: 1 }} onPress={() => setShowUnits(false)}>
+    <Stack.Screen options={{ headerShown: false }} />
 
-        {/* Верхня дуга */}
-        <View
-          style={{
-            backgroundColor: '#F6E2A7',
-            height: 120,
-            borderBottomLeftRadius: 100,
-            borderBottomRightRadius: 100,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ fontSize: 28, fontWeight: '700' }}>
-            Редагувати продукт
-          </Text>
+    <ScrollView style={{ flex: 1, backgroundColor: "#EAF6FA" }}>
+
+      {/* Верх */}
+      <View style={styles.top}>
+        <Text style={styles.title}>Редагувати продукт</Text>
+      </View>
+
+      <View style={styles.content}>
+
+        {/* Назва */}
+        <View style={styles.card}>
+          <Text style={styles.label}>Назва продукту</Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Наприклад: Молоко"
+            placeholderTextColor="#9AA3AF"
+            style={[styles.input, errors.name && styles.errorBorder]}
+          />
         </View>
 
-        <View style={{ padding: 20 }}>
+        {/* Кількість + dropdown */}
+        <View style={[styles.card, { zIndex: 50, elevation: 50 }]}>
+          <Text style={styles.label}>Кількість</Text>
 
-          {/* Назва */}
-          <View style={sectionStyle}>
-            <Text style={labelStyle}>Назва продукту</Text>
+          <View style={{ flexDirection: "row" }}>
             <TextInput
-              value={name}
-              onChangeText={setName}
-              style={[inputStyle, errors.name && errorBorder]}
+              value={quantity}
+              onChangeText={setQuantity}
+              keyboardType="numeric"
+              placeholder="0"
+              placeholderTextColor="#9AA3AF"
+              style={[
+                styles.input,
+                { flex: 1, marginRight: 10 },
+                errors.quantity && styles.errorBorder,
+              ]}
             />
-          </View>
 
-          {/* Кількість */}
-          <View style={sectionStyle}>
-            <Text style={labelStyle}>Кількість</Text>
+            <View style={{ width: 120, position: "relative" }}>
+              <TouchableOpacity
+                onPress={() => setShowUnits(!showUnits)}
+                activeOpacity={0.85}
+                style={[styles.input, { justifyContent: "center" }]}
+              >
+                <Text style={styles.unitText}>
+                  {UNIT_LABELS[unit] || unit}
+                </Text>
+              </TouchableOpacity>
 
-            <View style={{ flexDirection: 'row' }}>
-              <TextInput
-                value={quantity}
-                onChangeText={setQuantity}
-                keyboardType="numeric"
-                style={[
-                  inputStyle,
-                  { flex: 1, marginRight: 10 },
-                  errors.quantity && errorBorder,
-                ]}
-              />
-
-              <View style={{ width: 140, position: 'relative' }}>
-                <TouchableOpacity
-                  onPress={() => setShowUnits(!showUnits)}
-                  style={[inputStyle, { justifyContent: 'center' }]}
-                >
-                  <Text>{UNIT_LABELS[unit] || unit}</Text>
-                </TouchableOpacity>
-
-                {showUnits && (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      top: 50,
-                      width: '100%',
-                      backgroundColor: '#fff',
-                      borderRadius: 10,
-                      elevation: 6,
-                      zIndex: 1000,
-                    }}
+              {showUnits && (
+                <View style={styles.unitsDropdown}>
+                  <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled
                   >
                     {UNITS.map((item) => (
                       <TouchableOpacity
@@ -291,89 +279,70 @@ export default function EditProduct() {
                           setUnit(item);
                           setShowUnits(false);
                         }}
-                        style={{ padding: 12 }}
+                        activeOpacity={0.85}
+                        style={styles.unitRow}
                       >
-                        <Text>{UNIT_LABELS[item]}</Text>
+                        <Text style={styles.unitRowText}>
+                          {UNIT_LABELS[item]}
+                        </Text>
                       </TouchableOpacity>
                     ))}
-                  </View>
-                )}
-              </View>
+                  </ScrollView>
+                </View>
+              )}
             </View>
           </View>
+        </View>
 
-          {/* Storage */}
-          <View style={sectionStyle}>
-            <Text style={labelStyle}>Місце зберігання</Text>
+        {/* Storage */}
+        <View style={styles.card}>
+          <Text style={styles.label}>Місце зберігання</Text>
 
-            <TouchableOpacity
-              onPress={() => {
-                if (!storagePlaces.length) return;
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              if (!storagePlaces.length) return;
 
-                const currentIndex = storagePlaces.findIndex(
-                  (s) => s.id === storageId
-                );
+              const currentIndex = storagePlaces.findIndex(
+                (s) => s.id === storageId
+              );
 
-                const nextIndex =
-                  currentIndex === -1 ||
-                  currentIndex === storagePlaces.length - 1
-                    ? 0
-                    : currentIndex + 1;
+              const nextIndex =
+                currentIndex === -1 ||
+                currentIndex === storagePlaces.length - 1
+                  ? 0
+                  : currentIndex + 1;
 
-                setStorage(storagePlaces[nextIndex].name);
-                setStorageId(storagePlaces[nextIndex].id);
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: '#FF7A00',
-                  paddingVertical: 6,
-                  paddingHorizontal: 14,
-                  borderRadius: 20,
-                  alignSelf: 'flex-start',
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '600' }}>
-                  {storage}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+              setStorage(storagePlaces[nextIndex].name);
+              setStorageId(storagePlaces[nextIndex].id);
+            }}
+          >
+            <View style={styles.storagePill}>
+              <Text style={styles.storagePillText}>{storage}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-          {/* Категорії */}
-          <View style={sectionStyle}>
-            <Text style={labelStyle}>Категорії</Text>
+        {/* Категорії */}
+        <View style={styles.card}>
+          <Text style={styles.label}>Категорії</Text>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                justifyContent: 'space-between',
-                marginTop: 10,
-              }}
-            >
-              {CATEGORIES.map((cat) => (
+          <View style={styles.categoriesWrap}>
+            {CATEGORIES.map((cat) => {
+              const selected = selectedCategory?.id === cat.id;
+
+              return (
                 <TouchableOpacity
                   key={cat.id}
                   onPress={() => setSelectedCategory(cat)}
-                  style={{
-                    width: '23%',
-                    alignItems: 'center',
-                    marginBottom: 15,
-                  }}
+                  activeOpacity={0.85}style={styles.categoryItem}
                 >
                   <View
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                      backgroundColor: cat.color,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      borderWidth:
-                        selectedCategory?.id === cat.id ? 3 : 0,
-                      borderColor: '#000',
-                    }}
+                    style={[
+                      styles.categoryCircle,
+                      { backgroundColor: cat.color },
+                      selected && styles.categorySelected,
+                    ]}
                   >
                     <MaterialCommunityIcons
                       name={cat.icon}
@@ -383,83 +352,235 @@ export default function EditProduct() {
                   </View>
 
                   <Text
-                    style={{
-                      marginTop: 5,
-                      fontSize: 10,
-                      textAlign: 'center',
-                    }}
+                    style={[
+                      styles.categoryName,
+                      selected && styles.categoryNameSelected,
+                    ]}
+                    numberOfLines={2}
                   >
                     {cat.name}
                   </Text>
                 </TouchableOpacity>
-              ))}
-            </View>
+              );
+            })}
           </View>
-
-          {/* Дата */}
-          <View style={sectionStyle}>
-            <Text style={labelStyle}>Термін придатності</Text>
-            <TextInput
-              value={expiration}
-              onChangeText={formatDate}
-              keyboardType="numeric"
-              maxLength={10}
-              style={[inputStyle, errors.expiration && errorBorder]}
-            />
-          </View>
-
-          {/* Коментар */}
-          <View style={sectionStyle}>
-            <Text style={labelStyle}>Коментувати</Text>
-            <TextInput
-              value={comment}
-              onChangeText={setComment}
-              multiline
-              style={[inputStyle, { height: 80 }]}
-            />
-          </View>
-
-          <TouchableOpacity
-            onPress={handleSave}
-            style={{
-              backgroundColor: '#FF7A00',
-              paddingVertical: 18,
-              borderRadius: 40,
-              alignItems: 'center',
-              marginBottom: 40,
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-              Зберегти
-            </Text>
-          </TouchableOpacity>
-
         </View>
-      </ScrollView>
-    </Pressable>
-  );
+
+        {/* Дата */}
+        <View style={styles.card}>
+          <Text style={styles.label}>Термін придатності</Text>
+          <TextInput
+            value={expiration}
+            onChangeText={formatDate}
+            keyboardType="numeric"
+            maxLength={10}
+            placeholder="ДД-ММ-РРРР"
+            placeholderTextColor="#9AA3AF"
+            style={[styles.input, errors.expiration && styles.errorBorder]}
+          />
+        </View>
+
+        {/* Коментар */}
+        <View style={styles.card}>
+          <Text style={styles.label}>Коментар</Text>
+          <TextInput
+            value={comment}
+            onChangeText={setComment}
+            multiline
+            placeholder="Додайте декілька слів"
+            placeholderTextColor="#9AA3AF"
+            style={[styles.input, { height: 96, paddingTop: 12 }]}
+          />
+        </View>
+
+        {/* Кнопка */}
+        <TouchableOpacity
+          onPress={handleSave}
+          activeOpacity={0.9}
+          style={styles.saveBtn}
+        >
+          <Text style={styles.saveText}>Зберегти</Text>
+        </TouchableOpacity>
+
+      </View>
+    </ScrollView>
+  </Pressable>
+);
 }
+const styles = {
+  top: {
+    height: 170,
+    justifyContent: "flex-end",
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    backgroundColor: "#EAF6FA",
+  },
 
-const sectionStyle = {
-  backgroundColor: '#D9EEF6',
-  padding: 15,
-  borderRadius: 20,
-  marginBottom: 20,
-};
+  title: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: "#0F172A",
+    textAlign: "center",
+  },
 
-const labelStyle = {
-  marginBottom: 8,
-  fontWeight: '500',
-};
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
 
-const inputStyle = {
-  backgroundColor: '#fff',
-  padding: 12,
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: 'transparent',
-};
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.04)",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
+  },
 
-const errorBorder = {
-  borderColor: '#FF3B30',
+  label: {
+    marginBottom: 8,
+    fontWeight: "800",
+    fontSize: 15,
+    color: "#64748B",
+  },
+
+  input: {
+    backgroundColor: "#EAF6FA",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.04)",
+    color: "#0F172A",
+    fontWeight: "700",
+  },
+
+  errorBorder: {
+    borderColor: "#FF3B30",
+  },
+
+  unitText: {
+    color: "#0F172A",
+    fontWeight: "800",
+  },
+
+  unitsDropdown: {
+    position: "absolute",
+    top: 48,
+    right: 0,
+    width: 120,
+    maxHeight: 160,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+    zIndex: 9999,
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    overflow: "hidden",
+  },
+
+  unitRow: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+
+  unitRowText: {
+    color: "#0F172A",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  storagePill: {
+    backgroundColor: "rgba(255,122,0,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(255,122,0,0.24)",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    alignSelf: "flex-start",
+  },
+
+  storagePillText: {
+    color: "#FF7A00",
+    fontWeight: "900",
+    fontSize: 14,
+  },
+
+  categoriesWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+
+  categoryItem: {
+    width: "23%",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+
+  categoryCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.05)",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+
+  categorySelected: {
+    borderWidth: 3,
+    borderColor: "#FF7A00",
+  },
+
+  categoryName: {
+    marginTop: 6,
+    fontSize: 11,
+    textAlign: "center",
+    color: "#334155",
+    fontWeight: "700",
+    opacity: 0.85,
+  },
+
+  categoryNameSelected: {
+    opacity: 1,
+    fontWeight: "900",
+  },
+
+  saveBtn: {
+    backgroundColor: "#FF7A00",
+    paddingVertical: 16,
+    borderRadius: 24,
+    alignItems: "center",
+    marginTop: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
+  },
+
+  saveText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "900",
+    letterSpacing: 0.2,
+  },
 };

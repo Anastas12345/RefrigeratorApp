@@ -1,25 +1,31 @@
 {
   "expo": {
-    "name": "RefrigeratorApp",
-    "slug": "RefrigeratorApp",
+    "name": "Foodio",
+    "slug": "Foodio",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "refrigeratorapp",
+    "icon": "./assets/images/icon_ios.jpg",
+    "scheme": "foodio",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.Anastas12345.foodio",
+      "icon": "./assets/images/icon_ios.jpg",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon_ios.jpg",
+        "backgroundImage": "./assets/images/icon_ios.jpg",
+        "monochromeImage": "./assets/images/icon_ios.jpg"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.Anastas12345.foodio"
     },
     "web": {
       "output": "static",
@@ -43,6 +49,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "769ed9bf-330b-433b-8afe-5da80bed6a89"
+      }
     }
   }
 }

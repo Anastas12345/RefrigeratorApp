@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,18 +8,18 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
 } from "react-native";
 import { CATEGORIES } from "../constants/categories";
-import { Stack } from 'expo-router';
-
 
 const API_URL = "https://myfridgebackend.onrender.com/api/products";
+
 const UNIT_LABELS = {
-  pcs: 'шт',
-  kg: 'кг',
-  g: 'г',
-  l: 'л',
-  ml: 'мл',
+  pcs: "шт",
+  kg: "кг",
+  g: "г",
+  l: "л",
+  ml: "мл",
 };
 
 export default function ProductDetails() {
@@ -33,6 +33,7 @@ export default function ProductDetails() {
   useEffect(() => {
     if (!id) return;
     fetchProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchProduct = async () => {
@@ -49,20 +50,24 @@ export default function ProductDetails() {
       const data = await response.json();
       setProduct(data);
 
-      // 🔥 Читаємо категорію з productCategories
+      // 🔥 Категорія з AsyncStorage (як у тебе), але без проблем з типами id
       const stored = await AsyncStorage.getItem("productCategories");
-
       if (stored) {
         const categoriesMap = JSON.parse(stored);
-        const categoryId = categoriesMap[data.id];
 
-        if (categoryId) {
+        // JSON keys = string, тому приводимо ключ до string
+        const productKey = String(data.id ?? data._id ?? id);
+
+        const categoryId =
+          categoriesMap[productKey] ??
+          categoriesMap[data.id] ??
+          categoriesMap[String(data.id)];
+
+        if (categoryId != null) {
           const categoryObj = CATEGORIES.find(
-            (cat) => cat.id === categoryId
+            (cat) => String(cat.id) === String(categoryId)
           );
-          if (categoryObj) {
-            setCategory(categoryObj);
-          }
+          if (categoryObj) setCategory(categoryObj);
         }
       }
     } catch (err) {
@@ -91,7 +96,7 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center" }}>
+      <View style={[styles.screen, styles.center]}>
         <ActivityIndicator size="large" color="#FF7A00" />
       </View>
     );
@@ -99,14 +104,10 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text>Продукт не знайдено</Text>
+      <View style={[styles.screen, styles.center]}>
+        <Text style={{ color: "#0F172A", fontWeight: "800" }}>
+          Продукт не знайдено
+        </Text>
       </View>
     );
   }
@@ -116,278 +117,272 @@ export default function ProductDetails() {
     : "—";
 
   return (
-  <>
-    <Stack.Screen
-  options={{
-    headerTransparent: true,
-    headerTitle: '',
-    headerShadowVisible: false,
-    headerBackVisible: false,
-    headerStyle: {
-      backgroundColor: 'transparent',
-    },
-  }}
-/>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
 
-    <View style={{ flex: 1, backgroundColor: "#CFE8F1" }}>
-      <View
-        style={{
-          backgroundColor: "#F6E2A7",
-          height: 120,
-          borderBottomLeftRadius: 100,
-          borderBottomRightRadius: 100,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 26, fontWeight: "700" }}>
-          Інформація
-        </Text>
-      </View>
-
-      <View style={{ padding: 20 }}>
-        <View
-          style={{
-            backgroundColor: "#D9EEF6",
-            padding: 15,
-            borderRadius: 20,
-            marginBottom: 20,
+      <View style={styles.screen}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 70,
+            paddingBottom: 40,
           }}
+          showsVerticalScrollIndicator={false}
         >
-          <Text>Назва продукту</Text>
-          <Text style={{ fontSize: 18, fontWeight: "600" }}>
-            {product.name}
-          </Text>
+          <Text style={styles.pageTitle}>Інформація</Text>
 
-
-          <Text style={{ marginTop: 15 }}>
-            Місце зберігання
-          </Text>
-          <Text
-            style={{
-              color: "#FF7A00",
-              fontWeight: "600",
-            }}
-          >
-            {product.storage_places?.name || "—"}
-          </Text>
-        </View>
-
-        {category && (
-          <View
-            style={{
-              backgroundColor: "#D9EEF6",
-              padding: 15,
-              borderRadius: 20,
-              marginBottom: 20,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ marginBottom: 10 }}>
-              Категорія
-            </Text>
-
-            <View
-              style={{
-                width: 60,
-                height: 60,
-                borderRadius: 30,
-                backgroundColor: category.color,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
-              <MaterialCommunityIcons
-                name={category.icon}
-                size={28}
-                color="#fff"
-              />
+          {/* КАРТКА 1 */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Назва продукту</Text>
+            <View style={styles.field}>
+              <Text style={styles.fieldValue}>{product.name}</Text>
             </View>
 
-            <Text>{category.name}</Text>
+            <Text style={[styles.cardTitle, { marginTop: 16 }]}>
+              Місце зберігання
+            </Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {product.storage_places?.name || "—"}
+              </Text>
+            </View>
+          </View>
+
+          {/* КАРТКА 3 */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Кількість</Text>
+            <View style={styles.field}>
+              <Text style={styles.fieldValue}>
+                {product.quantity} {UNIT_LABELS[product.unit] || product.unit}
+              </Text>
+            </View>
+
+            <Text style={[styles.cardTitle, { marginTop: 16 }]}>
+              Термін придатності
+            </Text>
+            <View style={styles.field}>
+              <Text style={[styles.fieldValue, { color: "#FF7A00" }]}>
+                {formattedDate}
+              </Text>
+            </View>
+          </View>
+
+          {/* КНОПКИ */}
+          <View style={styles.rowButtons}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/edit-product",
+                  params: { id: product.id },
+                })
+              }
+              activeOpacity={0.9}
+              style={styles.btnSoft}
+            >
+              <Text style={styles.btnSoftText}>Редагувати</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setDeleteModalVisible(true)}
+              activeOpacity={0.9}
+              style={styles.btnPrimary}
+            >
+              <Text style={styles.btnPrimaryText}>З’їв</Text>
+            </TouchableOpacity>
+          </View>
+
+          
+        </ScrollView>
+
+        {/* МОДАЛКА */}
+        {deleteModalVisible && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Вам було смачно?</Text>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.modalBtnPrimary]}
+                  onPress={deleteProduct}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.modalBtnTextWhite}>Так</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.modalBtnSoft]}
+                  onPress={() => setDeleteModalVisible(false)}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.modalBtnTextDark}>Ні</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.modalHint}>
+                “Так” — продукт буде видалено.{"\n"}
+                “Ні” — продукт залишиться у списку.
+              </Text>
+            </View>
           </View>
         )}
-
-        <Text>Кількість</Text>
-        <Text style={{ marginBottom: 20 }}>
-  {product.quantity} {UNIT_LABELS[product.unit] || product.unit}
-</Text>
-
-        <Text>Термін придатності</Text>
-        <Text
-          style={{
-            color: "#FF7A00",
-            fontWeight: "600",
-            marginBottom: 30,
-          }}
-        >
-          {formattedDate}
-        </Text>
-
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/edit-product",
-                params: { id: product.id },
-              })
-            }
-            style={{
-              backgroundColor: "#F6E2A7",
-              padding: 12,
-              borderRadius: 10,
-              width: "45%",
-              alignItems: "center",
-            }}
-          >
-            <Text>Редагувати</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() =>
-              setDeleteModalVisible(true)
-            }
-            style={{
-              backgroundColor: "#F39C12",
-              paddingVertical: 12,
-              paddingHorizontal: 25,
-              borderRadius: 12,
-            }}
-          >
-            <Text style={{ fontWeight: "600" }}>
-              З’їв
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={{
-            backgroundColor: "#FF7A00",
-            paddingVertical: 16,
-            borderRadius: 40,
-            alignItems: "center",
-            marginTop: 40,
-          }}
-          onPress={() => router.back()}
-        >
-          <Text
-            style={{
-              color: "#fff",
-              fontWeight: "600",
-            }}
-          >
-            Назад
-          </Text>
-        </TouchableOpacity>
       </View>
-
-      {/* 🔥 МОДАЛЬНЕ ВІКНО */}
-      {deleteModalVisible && (
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalCard}>
-      <Text style={styles.modalTitle}>
-        Вам було смачно?
-      </Text>
-
-      <View style={styles.modalButtons}>
-        <TouchableOpacity
-          style={styles.modalYes}
-          onPress={deleteProduct}
-        >
-          <Text style={styles.modalText}>
-            Так
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.modalNo}
-          onPress={() =>
-            setDeleteModalVisible(false)
-          }
-        >
-          <Text style={styles.modalText}>
-            Ні
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 👇 Ось тут має бути підказка */}
-      <Text style={styles.modalHint}>
-        "Так" — продукт буде видалено.
-        {"\n"}
-        "Ні" — продукт залишиться у списку.
-      </Text>
-
-
-    </View>
-  </View>
-)}
-        </View>
-  </>
-);
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: "#EAF6FA" },
+  center: { justifyContent: "center", alignItems: "center" },
+
+  pageTitle: {
+    fontSize: 28,           // було 34
+    fontWeight: "900",
+    color: "#0F172A",
+    marginBottom: 20,
+    opacity: 0.92,
+  textAlign: "center",
+  },
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,       // було 26
+    padding: 14,            // було 16
+    marginBottom: 12,       // було 16
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.04)",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
+  },
+
+  cardTitle: {
+    fontSize: 15,           // було 18
+    fontWeight: "800",
+    color: "#64748B",       // світло-сірий
+  },
+
+  field: {
+    marginTop: 8,           // було 10
+    backgroundColor: "#EAF6FA",
+    borderRadius: 16,       // було 18
+    paddingVertical: 12,    // було 14
+    paddingHorizontal: 14,  // було 16
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.04)",
+  },
+
+  fieldValue: {
+    fontSize: 16,           // було 18
+    fontWeight: "800",
+    color: "#334155",       // м’який сірий (не чорний)
+  },
+
+  badge: {
+    marginTop: 8,
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,122,0,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(255,122,0,0.24)",
+    paddingVertical: 8,     // було 10
+    paddingHorizontal: 14,  // було 16
+    borderRadius: 16,
+  },
+
+  badgeText: {
+    color: "#FF7A00",
+    fontWeight: "900",
+    fontSize: 14,           // було 16
+  },
+
+  rowButtons: {
+    flexDirection: "row",
+    gap: 10,                // було 12
+    marginTop: 6,
+  },
+
+  btnPrimary: {
+    flex: 1,
+    backgroundColor: "#FF7A00",
+    paddingVertical: 14,    // було 16
+    borderRadius: 20,       // було 22
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.10,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+
+  btnPrimaryText: {
+    color: "#fff",
+    fontSize: 15,           // було 16
+    fontWeight: "900",
+    letterSpacing: 0.2,
+  },
+
+  btnSoft: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 14,    // було 16
+    borderRadius: 20,       // було 22
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
+  },
+
+  btnSoftText: {
+    color: "#334155",       // м’який сірий
+    fontSize: 15,
+    fontWeight: "900",
+  },
+
+  // modal без змін по логіці, просто компактніше і “м’якіше”
   modalOverlay: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
-    
+    paddingHorizontal: 24,
   },
-
   modalCard: {
-    backgroundColor: "#f1c555",
-    width: "80%",
-    padding: 25,
-    borderRadius: 30,
-    alignItems: "center",
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
   },
-
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 20,
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#334155",
+    textAlign: "center",
+    marginBottom: 10,
   },
-
   modalButtons: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    gap: 10,
+    marginTop: 6,
   },
-
-  modalYes: {
-    backgroundColor: "#FF7A00",
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 20,
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: "center",
   },
-
-  modalNo: {
-    backgroundColor: "#FF7A00",
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-  },
-modalHint: {
-  marginTop: 15,
-  fontSize: 12,
-  color: "#555",
-  textAlign: "center",
-  lineHeight: 18,
-},
-  modalText: {
-    color: "#fff",
-    fontWeight: "700",
+  modalBtnPrimary: { backgroundColor: "#FF7A00" },
+  modalBtnSoft: { backgroundColor: "#F1F5F9" },
+  modalBtnTextWhite: { color: "#fff", fontWeight: "900" },
+  modalBtnTextDark: { color: "#334155", fontWeight: "900" },
+  modalHint: {
+    marginTop: 10,
+    fontSize: 12,
+    color: "#94A3B8",
+    textAlign: "center",
+    lineHeight: 18,
   },
 });

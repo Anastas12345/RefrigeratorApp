@@ -137,7 +137,11 @@ export default function AiHelper() {
         data={filteredProducts}
         numColumns={2}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ padding: 20, paddingBottom: 180 }}
+        contentContainerStyle={{
+  paddingHorizontal: 20,
+  paddingTop: 70,   // 🔽 ось це опускає весь header вниз
+  paddingBottom: 180,
+}}
         ListHeaderComponent={
           <>
             <Text style={styles.title}>
@@ -150,6 +154,7 @@ export default function AiHelper() {
               onChangeText={setPrompt}
               style={styles.input}
               multiline
+              placeholderTextColor="#94A3B8"
             />
 
             {/* 🔥 КНОПКА ВСІ */}
@@ -357,13 +362,33 @@ export default function AiHelper() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#EAF6FA" },
-  title: { fontSize: 26, fontWeight: "700", marginBottom: 15 },
+ title: {
+  fontSize: 30,
+  fontWeight: "900",
+  color: "#0F172A",
+  marginBottom: 18,
+  textAlign: "center",
+},
   input: {
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 20,
-  },
+  backgroundColor: "#FFFFFF",
+  paddingVertical: 14,
+  paddingHorizontal: 16,
+  borderRadius: 18,
+  marginBottom: 22,
+
+  color: "#0F172A",        // 🔥 темний текст
+  fontWeight: "600",
+  fontSize: 15,
+
+  borderWidth: 1,
+  borderColor: "rgba(0,0,0,0.05)",
+
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 2,
+},
   subtitle: { fontWeight: "600", marginBottom: 10 },
 
   allButton: {

@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingHorizontal: 22,
-    paddingTop: 28,
+    paddingTop: 35,
   },
 
   titleBig: {
